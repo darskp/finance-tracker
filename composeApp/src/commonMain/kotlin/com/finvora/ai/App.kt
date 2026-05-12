@@ -18,15 +18,16 @@ import org.jetbrains.compose.resources.painterResource
 
 import finvoraai.composeapp.generated.resources.Res
 import finvoraai.composeapp.generated.resources.compose_multiplatform
+import com.finvora.ai.ui.theme.AppTheme
 
 @Composable
 @Preview
 fun App() {
-    MaterialTheme {
+    AppTheme {
         var showContent by remember { mutableStateOf(false) }
         Column(
             modifier = Modifier
-                .background(MaterialTheme.colorScheme.primaryContainer)
+                .background(MaterialTheme.colorScheme.background)
                 .safeContentPadding()
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
