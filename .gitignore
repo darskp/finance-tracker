@@ -5,6 +5,7 @@
 xcuserdata
 !src/**/build/
 local.properties
+*.jks
 .idea
 .DS_Store
 captures
@@ -17,3 +18,13 @@ captures
 !*.xcworkspace/contents.xcworkspacedata
 **/xcshareddata/WorkspaceSettings.xcsettings
 node_modules/
+
+# Keystore and Datastore files
+*.jks
+prefs.preferences_pb
+
+# Firebase / Services (Sensitive)
+**/google-services.json
+**/GoogleService-Info.plist
+
+/website

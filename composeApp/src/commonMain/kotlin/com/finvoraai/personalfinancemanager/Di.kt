@@ -1,0 +1,58 @@
+package com.finvoraai.personalfinancemanager
+
+import androidx.room.RoomDatabase
+import com.finvoraai.personalfinancemanager.finvora.data.local.AppDatabase
+import com.finvoraai.personalfinancemanager.finvora.feature.home.HomeScreenViewModel
+import com.finvoraai.personalfinancemanager.finvora.feature.main.MainViewModel
+import com.finvoraai.personalfinancemanager.finvora.feature.onboarding.OnBoardingViewModel
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.serialization.json.Json
+import org.koin.core.Koin
+import org.koin.core.KoinApplication
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.core.module.Module
+import org.koin.core.module.dsl.viewModelOf
+import org.koin.dsl.module
+
+private var koinRef: Koin? = null
+
+fun initKoin(config: (KoinApplication) -> Unit = {}) {
+    if (koinRef == null) {
+        val app = startKoin {
+            config(this)
+            modules(appModule, platformModule())
+        }
+        koinRef = app.koin
+    }
+}
+
+val appModule = module {
+    single<CoroutineDispatcher> { Dispatchers.Default }
+    single {
+        Json {
+            ignoreUnknownKeys = true
+            coerceInputValues = true
+            allowComments = true
+            isLenient = true
+        }
+    }
+
+    single { get<RoomDatabase.Builder<AppDatabase>>().build() }
+    single { get<AppDatabase>().getSettingsDao() }
+
+    viewModelOf(::OnBoardingViewModel)
+    viewModelOf(::HomeScreenViewModel)
+    viewModelOf(::MainViewModel)
+}
+
+fun resetKoin() {
+    stopKoin()
+    koinRef = null
+    initKoin()
+}
+
+expect fun platformModule(): Module
+
+fun getKoin(): Koin = koinRef ?: throw Throwable("Koin is not initialized. Call initKoin() first.")
