@@ -1,0 +1,73 @@
+style:
+  MagicNumber:
+    active: true
+    ignoreNumbers: ['0', '1', '-1']
+    ignorePropertyDeclaration: true
+
+  ForbiddenImport:
+    active: true
+    imports:
+      - 'android.graphics.Color'
+      - 'androidx.compose.ui.graphics.Color'
+    excludes:
+      - '**/ui/**'
+
+  MaxLineLength:
+    active: true
+    maxLineLength: 120
+
+  WildcardImport:
+    active: true
+    excludeImports:
+      - 'kotlinx.android.synthetic.*'
+      - 'androidx.compose.foundation.layout.*'
+      - 'androidx.compose.runtime.*'
+      - 'androidx.compose.material3.*'
+      - 'finvoraai.composeapp.generated.resources.*'
+      - 'com.finvoraai.personalfinancemanager.finvora.ui.theme.*'
+      - 'com.finvoraai.personalfinancemanager.finvora.ui.uiutils.*'
+      - 'androidx.compose.animation.core.*'
+      - 'platform.Foundation.*'
+      - 'org.jetbrains.compose.resources.*'
+
+  UnusedImports:
+    active: true
+
+  ReturnCount:
+    active: false
+
+naming:
+  FunctionNaming:
+    active: true
+    functionPattern: '[a-zA-Z][a-zA-Z0-9]*'
+  MatchingDeclarationName:
+    active: false
+
+complexity:
+  LongMethod:
+    active: true
+    threshold: 300
+
+  StringLiteralDuplication:
+    active: true
+    threshold: 3
+    excludes:
+      - '**/ui/**'
+      - '**/*ShareHelper.kt'
+      - '**/Platform*.kt'
+      - '**/*Database*.kt'
+      - '**/Di*.kt'
+      - '**/*DataStore*.kt'
+
+  TooManyFunctions:
+    active: false
+
+  LongParameterList:
+    active: false
+
+  CyclomaticComplexMethod:
+    active: false
+
+exceptions:
+  TooGenericExceptionThrown:
+    active: false

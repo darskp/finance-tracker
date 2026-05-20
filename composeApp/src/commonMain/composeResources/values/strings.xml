@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App Identity -->
+    <string name="app_name">FinvoraAI</string>
+    <string name="app_title">FinvoraAI</string>
+    <string name="app_title_long">FinvoraAI - Personal Finance Manager and Expense Tracker</string>
+    <string name="splash_tagline">Your Financial Future Starts Here</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Home Screen -->
+    <string name="home_dashboard_placeholder">Dashboard screen</string>
+
+    <!-- Welcome Screen -->
+    <string name="welcome_version_badge">VERSION 2.0 NOW LIVE</string>
+    <string name="welcome_heading_start">Welcome to </string>
+    <string name="welcome_heading_brand">FinvoraAI</string>
+    <string name="welcome_description">Experience the next generation of personal wealth management.</string>
+    <string name="welcome_btn_get_started">Get Started</string>
+    <string name="welcome_btn_view_demo">View Demo</string>
+
+    <!-- Onboarding Screen -->
+    <string name="onboarding_title">AI Financial Assistant</string>
+    <string name="onboarding_description">Take Control of Your Financial Future</string>
+    <string name="onboarding_page1_title">Track Expenses\nwith AI</string>
+    <string name="onboarding_page1_subtitle">Just type expenses like “$20 at Starbucks” and FinvoraAI automatically categorizes, saves, and organizes your spending smartly.</string>
+    <string name="onboarding_page2_title">Understand Your\nMoney Better</string>
+    <string name="onboarding_page2_subtitle">Get AI-powered insights, spending analysis, smart budgeting suggestions, and personalized financial guidance.</string>
+    <string name="onboarding_page3_title">Simple, Secure &amp;\nAlways Organized</string>
+    <string name="onboarding_page3_subtitle">Manage daily finances, track bills, and stay in control with a secure and beautifully designed finance experience.</string>
+    <string name="onboarding_btn_explore">Explore FinvoraAI ✦</string>
+    <string name="onboarding_btn_prev">Previous</string>
+    <string name="onboarding_btn_next">Next</string>
+
+    <!-- Sign Up Screen -->
+    <string name="auth_sign_up_subtitle">Start managing your wealth with AI-powered insights today.</string>
+    <string name="auth_email_label">Email Address</string>
+    <string name="auth_email_placeholder">name@example.com</string>
+    <string name="auth_password_label">Password</string>
+    <string name="auth_password_placeholder">Min. 8 characters</string>
+    <string name="auth_confirm_password_label">Confirm Password</string>
+    <string name="auth_confirm_password_placeholder">Repeat password</string>
+    <string name="auth_create_account_btn">Create Account</string>
+    <string name="auth_already_have_account_prefix">Already have an account? </string>
+    <string name="auth_log_in_link">Log In</string>
+    <string name="auth_google">Google</string>
+    <string name="auth_apple">Apple</string>
+    <string name="auth_or">OR</string>
+
+    <!-- OTP / Verification Screen -->
+    <string name="auth_verify_email_title">Verify Your Email</string>
+    <string name="auth_verify_email_subtitle">Enter the 6-digit code sent to %1$s</string>
+    <string name="auth_verification_code_label">Verification Code</string>
+    <string name="auth_verification_code_placeholder">Enter 6-digit code</string>
+    <string name="auth_verify_complete_btn">Verify &amp; Complete Setup</string>
+    <string name="auth_otp_resend_timer">Resend code in 00:%1$s</string>
+    <string name="auth_otp_resend_action">Resend Code</string>
+
+    <!-- Sign In Screen -->
+    <string name="auth_app_name">FinvoraAI</string>
+    <string name="auth_sign_in_subtitle">Intelligent wealth management for the modern era.</string>
+    <string name="auth_forgot">Forgot Password?</string>
+    <string name="auth_sign_in_btn">Sign In</string>
+    <string name="auth_dont_have_account_prefix">Don't have an account? </string>
+    <string name="auth_sign_up_link">Sign Up</string>
+
+    <!-- Shared Components -->
+    <string name="no_results_found">No results found</string>
+
+    <!-- Content Descriptions -->
+    <string name="cd_back">Back</string>
+    <string name="cd_logo">Logo</string>
+
+    <!-- Error States -->
+    <string name="error_title_connection">Connection Issue</string>
+    <string name="error_message_no_internet">No internet connection. Please check your network and try again.</string>
+    <string name="error_message_server">Server error. Please try again later.</string>
+    <string name="error_message_generic">Something went wrong. Please try again.</string>
+    <string name="action_try_again">Try Again</string>
+</resources>
