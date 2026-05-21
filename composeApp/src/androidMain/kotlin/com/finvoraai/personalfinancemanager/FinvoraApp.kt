@@ -13,6 +13,15 @@ class FinvoraApp : Application() {
 
         AnalyticsManager.addProvider(FirebaseAnalyticsProvider())
 
+        println("CLERK: Calling Clerk.initialize()")
+
+        com.clerk.api.Clerk.initialize(
+            this,
+            BuildConfig.CLERK_PUBLISHABLE_KEY
+        )
+
+        println("CLERK: Clerk.initialize() completed, isInitialized=${com.clerk.api.Clerk.isInitialized.value}")
+
         initKoin(this)
     }
 }

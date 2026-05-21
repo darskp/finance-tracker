@@ -2,6 +2,8 @@ package com.finvoraai.personalfinancemanager
 
 import androidx.room.RoomDatabase
 import com.finvoraai.personalfinancemanager.finvora.data.local.AppDatabase
+import com.finvoraai.personalfinancemanager.finvora.feature.auth.AuthManager
+import com.finvoraai.personalfinancemanager.finvora.feature.auth.AuthViewModel
 import com.finvoraai.personalfinancemanager.finvora.feature.home.HomeScreenViewModel
 import com.finvoraai.personalfinancemanager.finvora.feature.main.MainViewModel
 import com.finvoraai.personalfinancemanager.finvora.feature.onboarding.OnBoardingViewModel
@@ -41,10 +43,12 @@ val appModule = module {
 
     single { get<RoomDatabase.Builder<AppDatabase>>().build() }
     single { get<AppDatabase>().getSettingsDao() }
+    single { AuthManager() }
 
     viewModelOf(::OnBoardingViewModel)
     viewModelOf(::HomeScreenViewModel)
     viewModelOf(::MainViewModel)
+    viewModelOf(::AuthViewModel)
 }
 
 fun resetKoin() {

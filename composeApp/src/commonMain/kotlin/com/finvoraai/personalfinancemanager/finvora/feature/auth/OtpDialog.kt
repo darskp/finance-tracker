@@ -39,12 +39,24 @@ import org.jetbrains.compose.resources.stringResource
 private const val TIMER_STRING_PAD_LENGTH = 2
 
 @Composable
-fun OtpDialog(email: String, onDismissRequest: () -> Unit, onVerifySuccess: () -> Unit) {
+fun OtpDialog(
+    email: String,
+    onDismissRequest: () -> Unit,
+    onVerify: (String) -> Unit,
+    loading: Boolean = false,
+    error: String? = null
+) {
     val maskedEmail = remember(email) { email.maskEmail() }
     var otpCode by remember { mutableStateOf("") }
-    var loading by remember { mutableStateOf(false) }
-    var error by remember { mutableStateOf<String?>(null) }
+    var localError by remember { mutableStateOf<String?>(null) }
     var otpError by remember { mutableStateOf(false) }
+
+    LaunchedEffect(error) {
+        if (error != null) {
+            localError = error
+            otpError = true
+        }
+    }
 
     var timeLeft by remember { mutableStateOf(Motion.OTP_TIMER_SECONDS) }
 
@@ -59,19 +71,14 @@ fun OtpDialog(email: String, onDismissRequest: () -> Unit, onVerifySuccess: () -
 
     fun performVerification() {
         if (!loading) {
-            error = null
+            localError = null
             otpError = false
             val result = AuthValidator.validateOtp(otpCode)
             if (result is ValidationResult.Failure) {
-                error = result.message
-                otpError = true
-            } else if (otpCode != "123456") {
-                // Test Environment: test OTP is 123456
-                error = "Invalid OTP. Use 123456 for testing."
+                localError = result.message
                 otpError = true
             } else {
-                loading = true
-                onVerifySuccess()
+                onVerify(otpCode)
             }
         }
     }
@@ -104,7 +111,7 @@ fun OtpDialog(email: String, onDismissRequest: () -> Unit, onVerifySuccess: () -
             onValueChange = {
                 otpCode = it
                 otpError = false
-                error = null
+                localError = null
                 if (it.length == 6) {
                     performVerification()
                 }
@@ -120,7 +127,7 @@ fun OtpDialog(email: String, onDismissRequest: () -> Unit, onVerifySuccess: () -
         Spacer(modifier = Modifier.height(Spacing.s4))
 
         AnimatedVisibility(
-            visible = error != null,
+            visible = localError != null,
             enter = expandVertically() + fadeIn(),
             exit = shrinkVertically() + fadeOut()
         ) {
@@ -141,7 +148,7 @@ fun OtpDialog(email: String, onDismissRequest: () -> Unit, onVerifySuccess: () -
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = error ?: "",
+                    text = localError ?: "",
                     color = palette.error,
                     style = BodyNormal(),
                     fontWeight = FontWeight.Medium,
@@ -149,7 +156,7 @@ fun OtpDialog(email: String, onDismissRequest: () -> Unit, onVerifySuccess: () -
                 )
                 IconButtonComponent(
                     painter = painterResource(Res.drawable.ic_close),
-                    onClick = { error = null },
+                    onClick = { localError = null },
                     contentDescription = "Dismiss error",
                     tint = palette.error,
                     modifier = Modifier.size(Spacing.s4)
@@ -177,7 +184,7 @@ fun OtpDialog(email: String, onDismissRequest: () -> Unit, onVerifySuccess: () -
                 modifier = Modifier.clickable {
                     timeLeft = Motion.OTP_TIMER_SECONDS
                     otpCode = ""
-                    error = null
+                    localError = null
                     otpError = false
                 }
             )

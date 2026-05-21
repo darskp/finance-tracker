@@ -23,7 +23,7 @@ kotlin {
     
     androidTarget {
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_11)
+            jvmTarget.set(JvmTarget.JVM_17)
         }
     }
 
@@ -47,6 +47,7 @@ kotlin {
             implementation(libs.ktor.client.okhttp)
 
             implementation(libs.androidx.splashscreen)
+            implementation(libs.clerk.android.ui)
         }
 
 
@@ -116,12 +117,19 @@ android {
     namespace = "com.finvoraai.personalfinancemanager"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
+    val keystoreProperties = Properties()
+    val keystorePropertiesFile = rootProject.file("local.properties")
+    if (keystorePropertiesFile.exists()) {
+        keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+    }
+
     defaultConfig {
         applicationId = "com.finvoraai.personalfinancemanager"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
         versionName = "1.1.0"
+        buildConfigField("String", "CLERK_PUBLISHABLE_KEY", "\"${keystoreProperties["CLERK_PUBLISHABLE_KEY"]}\"")
     }
     buildFeatures {
         buildConfig = true
@@ -130,13 +138,8 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "/META-INF/versions/9/OSGI-INF/MANIFEST.MF"
         }
-    }
-
-    val keystoreProperties = Properties()
-    val keystorePropertiesFile = rootProject.file("local.properties")
-    if (keystorePropertiesFile.exists()) {
-        keystoreProperties.load(FileInputStream(keystorePropertiesFile))
     }
 
     signingConfigs {
@@ -159,8 +162,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     testOptions {
         unitTests {

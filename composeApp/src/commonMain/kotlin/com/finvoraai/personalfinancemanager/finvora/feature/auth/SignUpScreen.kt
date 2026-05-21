@@ -36,17 +36,50 @@ import finvoraai.composeapp.generated.resources.*
 import finvoraai.composeapp.generated.resources.Res
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun SignUpScreen(onSignUpSuccess: () -> Unit = {}, onNavigateToSignIn: () -> Unit = {}) {
+fun SignUpScreen(
+    onSignUpSuccess: () -> Unit = {},
+    onNavigateToSignIn: () -> Unit = {},
+    viewModel: AuthViewModel = koinViewModel()
+) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
 
-    var loading by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
     var isVerificationPending by remember { mutableStateOf(false) }
+    var loading by remember { mutableStateOf(false) }
 
-    var confirmPassword by remember { mutableStateOf("") }
+    val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(uiState) {
+        when (val state = uiState) {
+            is AuthUiState.NeedsVerification -> {
+                viewModel.resetState()
+                isVerificationPending = true
+                loading = false
+            }
+            is AuthUiState.Success -> {
+                viewModel.resetState()
+                isVerificationPending = false
+                onSignUpSuccess()
+            }
+            is AuthUiState.Error -> {
+                error = state.message
+                loading = false
+            }
+            is AuthUiState.Loading -> {
+                loading = true
+                error = null
+            }
+            else -> {
+                loading = false
+            }
+        }
+    }
+
     val palette = LocalAppPalette.current
 
     var emailError by remember { mutableStateOf(false) }
@@ -225,7 +258,7 @@ fun SignUpScreen(onSignUpSuccess: () -> Unit = {}, onNavigateToSignIn: () -> Uni
                                             error = confirmVal.message
                                             confirmPasswordError = true
                                         } else {
-                                            isVerificationPending = true
+                                            viewModel.signUp(email, password)
                                         }
                                     }
                                 }
@@ -270,7 +303,7 @@ fun SignUpScreen(onSignUpSuccess: () -> Unit = {}, onNavigateToSignIn: () -> Uni
                 ) {
                     FinvoraButton(
                         text = stringResource(Res.string.auth_google),
-                        onClick = {},
+                        onClick = { viewModel.googleSignIn() },
                         style = ButtonStyle.SECONDARY,
                         modifier = Modifier.weight(1f)
                     )
@@ -309,10 +342,11 @@ fun SignUpScreen(onSignUpSuccess: () -> Unit = {}, onNavigateToSignIn: () -> Uni
             OtpDialog(
                 email = email,
                 onDismissRequest = { isVerificationPending = false },
-                onVerifySuccess = {
-                    isVerificationPending = false
-                    onSignUpSuccess()
-                }
+                onVerify = { code ->
+                    viewModel.verifyEmail(code)
+                },
+                loading = loading,
+                error = error
             )
         }
     }

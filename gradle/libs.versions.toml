@@ -33,6 +33,7 @@ firebaseBom = "33.5.1"
 gitliveFirebase = "2.1.0"
 spotless = "6.25.0"
 detekt = "1.23.6"
+clerk-android = "1.0.13"
 
 [libraries]
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
@@ -88,7 +89,7 @@ kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics-ktx" }
 gitlive-firebase-analytics = { module = "dev.gitlive:firebase-analytics", version.ref = "gitliveFirebase" }
-
+clerk-android-ui = { module = "com.clerk:clerk-android-ui", version.ref = "clerk-android" }
 
 
 [plugins]
