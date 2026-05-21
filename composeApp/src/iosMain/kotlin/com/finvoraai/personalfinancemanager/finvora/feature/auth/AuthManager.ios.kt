@@ -29,4 +29,12 @@ actual class AuthManager actual constructor() {
     actual suspend fun signInWithGoogle() {
         // Placeholder for iOS
     }
+
+    actual suspend fun forgotPassword(email: String) {
+        // Placeholder for iOS
+    }
+
+    actual suspend fun resetPassword(code: String, newPassword: String) {
+        // Placeholder for iOS
+    }
 }

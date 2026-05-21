@@ -11,4 +11,6 @@ expect class AuthManager() {
     suspend fun signOut()
     fun observeUser(): Flow<AuthUser?>
     suspend fun signInWithGoogle()
+    suspend fun forgotPassword(email: String)
+    suspend fun resetPassword(code: String, newPassword: String)
 }

@@ -340,6 +340,597 @@ FinvoraButton(
 )
 ```
 
+You can add this as a new commandment without deleting anything. This fits perfectly with your architecture rules.
+
 ---
 
-Happy coding! Let's keep the FinvoraAI codebase premium, beautiful, consistent, and clean! 🚀
+## 🧠 6. NEVER Place Business Logic, API Calls, or State Management Logic Directly Inside UI Composables
+
+Composable functions should remain purely focused on rendering UI and handling lightweight UI interactions only.
+All business logic, validation, authentication flows, repository calls, navigation events, session handling, and state mutations must live inside the `ViewModel`, `UseCase`, or domain/data layers.
+
+The UI layer should simply:
+
+* Observe state
+* Render state
+* Dispatch user actions/events
+
+### ✅ Correct Responsibilities of a Composable
+
+* Rendering UI components
+* Animations
+* Keyboard/focus handling
+* Scroll states
+* Collecting ViewModel state
+* Triggering callbacks/events
+
+### ❌ What Should NEVER Live Inside UI
+
+* API calls
+* Authentication logic
+* Database operations
+* Validation algorithms
+* Data formatting logic
+* Session/token handling
+* Business calculations
+* Navigation decision logic
+* Mutable app state ownership
+
+---
+
+### ❌ Incorrect Example
+
+```kotlin
+LaunchedEffect(uiState) {
+    if (uiState is AuthUiState.Success) {
+        saveUserToken()
+        navigateToDashboard()
+    }
+}
+```
+
+```kotlin
+if (email.contains("@")) {
+    authRepository.login(email, password)
+}
+```
+
+---
+
+### ✅ Correct Example
+
+#### ViewModel
+
+```kotlin
+fun signIn(email: String, password: String) {
+    viewModelScope.launch {
+        _uiState.update { it.copy(isLoading = true) }
+
+        authRepository.signIn(email, password)
+
+        _events.emit(AuthEvent.NavigateDashboard)
+    }
+}
+```
+
+#### UI
+
+```kotlin
+LaunchedEffect(Unit) {
+    viewModel.events.collect { event ->
+        when(event) {
+            is AuthEvent.NavigateDashboard -> {
+                onSignInSuccess()
+            }
+        }
+    }
+}
+```
+
+---
+
+### 🏗️ FinvoraAI Architecture Philosophy
+
+```text id="yqsl2k"
+UI Layer        → Draws pixels only
+ViewModel       → Manages screen state
+Domain Layer    → Handles business rules
+Repository      → Handles data/API sources
+```
+
+---
+
+### 💡 Golden Rule
+
+If the logic can exist without Compose UI rendering, it most likely does NOT belong inside the Composable.
+
+Yes — your guide is already very strong, but a few additional “industry-grade” rules would make it feel like a real enterprise engineering handbook used inside top startups/companies.
+
+These are the most valuable additions you can add next:
+
+---
+
+# 🔄 7. SINGLE SOURCE OF TRUTH (SSOT)
+
+Every screen should receive its state from one centralized source only — usually the `ViewModel`.
+
+Never duplicate state across:
+
+* UI
+* Repository
+* Navigation
+* Local mutable states
+
+### ❌ Incorrect
+
+```kotlin id="58t8q7"
+var loading by remember { mutableStateOf(false) }
+```
+
+while ALSO having:
+
+```kotlin id="hbdw7z"
+uiState.isLoading
+```
+
+---
+
+### ✅ Correct
+
+```kotlin id="ltmjlwm"
+val uiState by viewModel.uiState.collectAsState()
+```
+
+UI should render directly from state.
+
+---
+
+# ♻️ 8. STATEFLOW FOR STATE, SHAREDFLOW FOR EVENTS
+
+Use the correct reactive stream type.
+
+| Purpose             | Use          |
+| ------------------- | ------------ |
+| Persistent UI State | `StateFlow`  |
+| One-time Events     | `SharedFlow` |
+| Navigation          | `SharedFlow` |
+| Snackbar/Toast      | `SharedFlow` |
+
+---
+
+### ✅ Example
+
+```kotlin id="6q8jdu"
+StateFlow<AuthUiState>
+SharedFlow<AuthEvent>
+```
+
+This is modern Android architecture standard.
+
+---
+
+# 🧪 9. ALL BUSINESS LOGIC MUST BE TESTABLE
+
+If logic cannot be unit-tested without Compose rendering, the architecture is wrong.
+
+### ❌ Incorrect
+
+```kotlin id="x24n1x"
+if (email.length > 5) {
+    // inside composable
+}
+```
+
+### ✅ Correct
+
+```kotlin id="iqz2j0"
+AuthValidator.validateEmail(email)
+```
+
+Composable should not contain decision-heavy logic.
+
+---
+
+# 🧱 10. FEATURE-FIRST PACKAGE STRUCTURE
+
+Always organize code by feature, not by file type.
+
+### ❌ Incorrect
+
+```text id="lt9f2q"
+screens/
+viewmodels/
+repositories/
+```
+
+### ✅ Correct
+
+```text id="c2vbh5"
+feature/
+ ├── auth/
+ ├── dashboard/
+ ├── onboarding/
+```
+
+This scales much better in large teams.
+
+---
+
+# 🧹 11. UI COMPONENTS MUST REMAIN REUSABLE
+
+Never tightly couple reusable components to:
+
+* screen-specific logic
+* navigation
+* repositories
+* ViewModels
+
+### ❌ Incorrect
+
+```kotlin id="g6x8hh"
+AppButton(
+    onClick = {
+        authViewModel.signIn()
+    }
+)
+```
+
+### ✅ Correct
+
+```kotlin id="6w7n2q"
+AppButton(
+    onClick = onSignInClick
+)
+```
+
+Pass callbacks from parent screens.
+
+---
+
+# 🚫 12. NEVER TRIGGER NAVIGATION DIRECTLY FROM RECOMPOSITION
+
+Navigation should happen only from:
+
+* events
+* side effects
+* action handlers
+
+Never from plain composable rendering.
+
+### ❌ Incorrect
+
+```kotlin id="7rl5x8"
+if (uiState.isLoggedIn) {
+    navController.navigate("home")
+}
+```
+
+---
+
+### ✅ Correct
+
+```kotlin id="9x6cuj"
+LaunchedEffect(Unit) {
+    viewModel.events.collect { ... }
+}
+```
+
+This avoids duplicate navigation bugs.
+
+---
+
+# ⚡ 13. KEEP COMPOSABLES SMALL & SPLIT UI SECTIONS
+
+If a composable becomes too large:
+
+* split sections
+* extract reusable blocks
+* separate form sections
+
+### Recommended Rule
+
+```text id="7h0j37"
+~200 lines max per composable
+```
+
+Large composables become impossible to maintain.
+
+---
+
+# 🧠 14. UI SHOULD BE STATELESS WHEN POSSIBLE
+
+Prefer:
+
+```kotlin id="71rk17"
+ProfileContent(
+    state = uiState,
+    onAction = {}
+)
+```
+
+instead of internal hidden mutable states.
+
+This improves:
+
+* previews
+* testing
+* reusability
+
+---
+
+# 🔐 15. NEVER STORE SENSITIVE TOKENS MANUALLY
+
+Since you use Clerk:
+
+### ❌ Never
+
+* save JWT manually
+* save auth token in preferences
+* manage refresh tokens manually
+
+### ✅ Correct
+
+Let Clerk manage:
+
+* sessions
+* persistence
+* refresh lifecycle
+
+Industry auth providers already solve this securely.
+
+---
+
+# 📡 16. REPOSITORIES SHOULD HIDE DATA SOURCES
+
+ViewModel should never know:
+
+* Retrofit
+* Firebase
+* SQLDelight
+* Clerk SDK internals
+
+### ❌ Incorrect
+
+```kotlin id="8l9hzr"
+FirebaseAuth.signInWithEmailAndPassword()
+```
+
+inside ViewModel.
+
+### ✅ Correct
+
+```kotlin id="p1skl8"
+authRepository.signIn()
+```
+
+This keeps architecture clean.
+
+---
+
+# 🎯 17. ALWAYS DESIGN FOR DARK MODE FIRST
+
+Fintech apps are heavily dark-mode focused.
+
+Every component should support:
+
+* dynamic palette
+* contrast accessibility
+* AMOLED readability
+
+Never assume white backgrounds.
+
+---
+
+# 📦 18. NO MAGIC NUMBERS OR RANDOM VALUES
+
+Avoid:
+
+```kotlin id="i8ykot"
+alpha = 0.73f
+padding = 19.dp
+```
+
+Create semantic tokens/constants instead.
+
+---
+
+# 🚀 19. OPTIMIZE RECOMPOSITION
+
+Avoid unnecessary recompositions:
+
+* use immutable UI state
+* remember expensive calculations
+* avoid passing unstable objects
+
+This becomes critical in:
+
+* dashboards
+* charts
+* finance lists
+
+---
+
+# 🏛️ 20. BUILD FOR SCALE, NOT JUST FOR TODAY
+
+Every new feature should assume:
+
+* multiple developers
+* future redesigns
+* backend changes
+* localization
+* tablet support
+* offline mode
+
+Good architecture survives growth.
+
+.\gradlew clean; adb uninstall com.finvoraai.personalfinancemanager; .\gradlew :composeApp:installDebug; adb shell monkey -p com.finvoraai.personalfinancemanager -c android.intent.category.LAUNCHER 1
+
+.\gradlew :composeApp:installDebug
+
+ adb logcat -s System.out:I | Select-String "CLERK"
+
+.\gradlew :composeApp:assembleDebug                       
+
+.\gradlew clean                                           
+
+
+1) Auto-format everything (Spotless)
+./gradlew spotlessApply
+
+This:
+Removes trailing commas
+Fixes ktlint style
+Fixes formatting everywhere
+
+
+Run static analysis (Detekt)
+./gradlew detekt
+
+Must be BUILD SUCCESSFUL.
+No warnings. No smells.
+
+
+
+---
+
+FINAL DEVELOPMENT CHECKLIST (MANDATORY BEFORE MARKING TASK COMPLETE)
+Before closing any FinvoraAI task, PR, feature branch, or AI-generated implementation, ALL checklist items below MUST pass successfully.
+
+If even one item fails, the task is considered incomplete.
+
+🎯 Architecture & UI Validation Checklist
+✅ UI & Design System
+ No hardcoded strings
+
+ No hardcoded colors
+
+ No hardcoded spacing/padding/sizes
+
+ No magic numbers
+
+ Uses Spacing tokens correctly
+
+ Uses theme palette correctly
+
+ Supports dark mode properly
+
+ Tablet responsiveness verified
+
+ Components remain reusable
+
+ No fully qualified imports inline
+
+ No formatting/util logic inside UI
+
+✅ Compose & Architecture
+ No business logic inside composables
+
+ UI only renders state
+
+ State handled via StateFlow
+
+ One-time events handled via SharedFlow
+
+ Navigation triggered only from events/effects
+
+ ViewModel is the single source of truth
+
+ Repository abstracts data sources
+
+ Composables kept modular and small
+
+ Recomposition-safe implementation
+
+ Stateless UI where possible
+
+✅ Authentication & Security
+ No manual token storage
+
+ No JWT persistence in SharedPreferences
+
+ Clerk session management used correctly
+
+ Logout clears session properly
+
+ Session restore tested successfully
+
+✅ Code Quality
+ No unused imports
+
+ No dead code
+
+ No duplicated logic
+
+ Functions properly named
+
+ Files organized feature-first
+
+ Business logic testable independently
+
+🧪 REQUIRED TERMINAL COMMANDS BEFORE TASK COMPLETION
+1️⃣ Clean Project
+./gradlew clean
+2️⃣ Auto Format Entire Project (MANDATORY)
+./gradlew spotlessApply
+This ensures:
+
+ktlint formatting passes
+
+trailing commas fixed
+
+spacing consistency
+
+import cleanup
+
+code style normalization
+
+3️⃣ Run Static Analysis (MANDATORY)
+./gradlew detekt
+Requirements:
+
+Must be BUILD SUCCESSFUL
+
+No warnings
+
+No smells
+
+No architecture violations
+
+4️⃣ Install Debug Build
+./gradlew :composeApp:installDebug
+
+5️⃣ Build APK
+./gradlew :composeApp:assembleDebug
+
+=🤖 AI MODEL / AGENT TASK COMPLETION RULE
+Any AI-generated code contribution (ChatGPT, Claude, Gemini, Cursor, Copilot, Antigravity, etc.) MUST end with a completion summary using this exact structure:
+
+## ✅ Task Completion Status
+
+- [x] UI implemented
+- [x] Dark mode supported
+- [x] Tablet responsiveness verified
+- [x] No hardcoded strings
+- [x] No hardcoded colors
+- [x] No hardcoded spacing
+- [x] No business logic inside UI
+- [x] StateFlow/SharedFlow used correctly
+- [x] ViewModel integrated
+- [x] Navigation handled safely
+- [x] Spotless formatting applied
+- [x] Detekt checks passed
+- [x] Build successful
+If any item is incomplete, it MUST remain unchecked.
+
+🚨 FINAL NON-NEGOTIABLE RULE
+A task is NOT considered complete until ALL of the following pass successfully:
+
+✔ spotlessApply
+✔ detekt
+✔ assembleDebug
+✔ installDebug
+✔ runtime testing
+✔ architecture validation
+✔ design system validation
+
+Happy coding! Let's keep the FinvoraAI codebase premium, scalable, maintainable, and industry-grade 🚀

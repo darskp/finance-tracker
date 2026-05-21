@@ -39,24 +39,17 @@ import org.jetbrains.compose.resources.stringResource
 private const val TIMER_STRING_PAD_LENGTH = 2
 
 @Composable
-fun OtpDialog(
-    email: String,
-    onDismissRequest: () -> Unit,
-    onVerify: (String) -> Unit,
-    loading: Boolean = false,
-    error: String? = null
-) {
+fun OtpDialog(email: String, viewModel: AuthViewModel) {
     val maskedEmail = remember(email) { email.maskEmail() }
     var otpCode by remember { mutableStateOf("") }
-    var localError by remember { mutableStateOf<String?>(null) }
+    var validationError by remember { mutableStateOf<String?>(null) }
     var otpError by remember { mutableStateOf(false) }
 
-    LaunchedEffect(error) {
-        if (error != null) {
-            localError = error
-            otpError = true
-        }
-    }
+    val uiState by viewModel.uiState.collectAsState()
+    val isLoading = uiState is AuthUiState.Loading
+    val verificationState = uiState as? AuthUiState.VerificationRequired
+    val apiError = verificationState?.error
+    val displayError = validationError ?: apiError
 
     var timeLeft by remember { mutableStateOf(Motion.OTP_TIMER_SECONDS) }
 
@@ -70,21 +63,20 @@ fun OtpDialog(
     }
 
     fun performVerification() {
-        if (!loading) {
-            localError = null
-            otpError = false
-            val result = AuthValidator.validateOtp(otpCode)
-            if (result is ValidationResult.Failure) {
-                localError = result.message
-                otpError = true
-            } else {
-                onVerify(otpCode)
-            }
+        validationError = null
+        otpError = false
+        viewModel.dismissVerificationError()
+        val result = AuthValidator.validateOtp(otpCode)
+        if (result is ValidationResult.Failure) {
+            validationError = result.message
+            otpError = true
+        } else {
+            viewModel.verifyEmail(otpCode)
         }
     }
 
     FinvoraDialog(
-        onDismissRequest = onDismissRequest
+        onDismissRequest = { viewModel.resetState() }
     ) {
         Text(
             text = stringResource(Res.string.auth_verify_email_title),
@@ -111,7 +103,8 @@ fun OtpDialog(
             onValueChange = {
                 otpCode = it
                 otpError = false
-                localError = null
+                validationError = null
+                viewModel.dismissVerificationError()
                 if (it.length == 6) {
                     performVerification()
                 }
@@ -127,7 +120,7 @@ fun OtpDialog(
         Spacer(modifier = Modifier.height(Spacing.s4))
 
         AnimatedVisibility(
-            visible = localError != null,
+            visible = displayError != null,
             enter = expandVertically() + fadeIn(),
             exit = shrinkVertically() + fadeOut()
         ) {
@@ -148,7 +141,7 @@ fun OtpDialog(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = localError ?: "",
+                    text = displayError ?: "",
                     color = palette.error,
                     style = BodyNormal(),
                     fontWeight = FontWeight.Medium,
@@ -156,8 +149,11 @@ fun OtpDialog(
                 )
                 IconButtonComponent(
                     painter = painterResource(Res.drawable.ic_close),
-                    onClick = { localError = null },
-                    contentDescription = "Dismiss error",
+                    onClick = {
+                        validationError = null
+                        viewModel.dismissVerificationError()
+                    },
+                    contentDescription = stringResource(Res.string.cd_dismiss_error),
                     tint = palette.error,
                     modifier = Modifier.size(Spacing.s4)
                 )
@@ -166,7 +162,6 @@ fun OtpDialog(
 
         Spacer(modifier = Modifier.height(Spacing.s4))
 
-        // Timer / Resend Code
         if (timeLeft > 0) {
             Text(
                 text = stringResource(
@@ -184,15 +179,16 @@ fun OtpDialog(
                 modifier = Modifier.clickable {
                     timeLeft = Motion.OTP_TIMER_SECONDS
                     otpCode = ""
-                    localError = null
+                    validationError = null
                     otpError = false
+                    viewModel.dismissVerificationError()
                 }
             )
         }
 
         Spacer(modifier = Modifier.height(Spacing.s6))
 
-        if (loading) {
+        if (isLoading) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -212,7 +208,7 @@ fun OtpDialog(
                     performVerification()
                 },
                 style = ButtonStyle.PRIMARY,
-                enabled = !loading
+                enabled = !isLoading
             )
         }
     }

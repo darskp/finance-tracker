@@ -4,6 +4,9 @@ import com.clerk.api.Clerk
 import com.clerk.api.network.serialization.errorMessage
 import com.clerk.api.network.serialization.onFailure
 import com.clerk.api.network.serialization.onSuccess
+import com.clerk.api.signin.SignIn
+import com.clerk.api.signin.attemptFirstFactor
+import com.clerk.api.signin.resetPassword
 import com.clerk.api.signup.SignUp
 import com.clerk.api.signup.attemptVerification
 import com.clerk.api.signup.prepareVerification
@@ -79,6 +82,51 @@ actual class AuthManager actual constructor() {
             }
             .onFailure {
                 println("CLERK: <<< signIn FAILED: ${it.errorMessage}")
+                throw Exception(it.errorMessage)
+            }
+    }
+
+    private var currentResetSignIn: SignIn? = null
+
+    actual suspend fun forgotPassword(email: String) {
+        println("CLERK: >>> forgotPassword(email=$email)")
+        SignIn.create(SignIn.CreateParams.Strategy.ResetPasswordEmailCode(identifier = email))
+            .onSuccess { signIn ->
+                println(
+                    "CLERK: <<< forgotPassword SUCCESS id=${signIn.id}" +
+                        " status=${signIn.status}"
+                )
+                currentResetSignIn = signIn
+            }
+            .onFailure {
+                println("CLERK: <<< forgotPassword FAILED: ${it.errorMessage}")
+                throw Exception(it.errorMessage)
+            }
+    }
+
+    @Suppress("ThrowsCount")
+    actual suspend fun resetPassword(code: String, newPassword: String) {
+        val signIn = currentResetSignIn
+            ?: throw Exception("No password reset in progress")
+        println("CLERK: >>> attemptFirstFactor(code=$code)")
+        signIn.attemptFirstFactor(
+            SignIn.AttemptFirstFactorParams.ResetPasswordEmailCode(code = code)
+        )
+            .onSuccess {
+                println("CLERK: <<< attemptFirstFactor SUCCESS status=${it.status}")
+            }
+            .onFailure {
+                println("CLERK: <<< attemptFirstFactor FAILED: ${it.errorMessage}")
+                throw Exception(it.errorMessage)
+            }
+        println("CLERK: >>> resetPassword(newPassword)")
+        signIn.resetPassword(newPassword = newPassword, signOutOfOtherSessions = true)
+            .onSuccess {
+                println("CLERK: <<< resetPassword SUCCESS")
+                currentResetSignIn = null
+            }
+            .onFailure {
+                println("CLERK: <<< resetPassword FAILED: ${it.errorMessage}")
                 throw Exception(it.errorMessage)
             }
     }

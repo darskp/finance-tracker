@@ -66,12 +66,25 @@
     <string name="auth_dont_have_account_prefix">Don't have an account? </string>
     <string name="auth_sign_up_link">Sign Up</string>
 
+    <!-- Forgot Password Screen -->
+    <string name="auth_forgot_title">Reset Password</string>
+    <string name="auth_forgot_subtitle">Enter your email to receive a reset code</string>
+    <string name="auth_forgot_send_code_btn">Send Reset Code</string>
+    <string name="auth_forgot_code_sent_subtitle">Enter the code sent to %1$s</string>
+    <string name="auth_forgot_code_label">Reset Code</string>
+    <string name="auth_forgot_code_placeholder">Enter 6-digit code</string>
+    <string name="auth_forgot_new_password_label">New Password</string>
+    <string name="auth_forgot_confirm_new_password_label">Confirm New Password</string>
+    <string name="auth_forgot_reset_btn">Reset Password</string>
+    <string name="auth_forgot_back_to_sign_in">Back to Sign In</string>
+
     <!-- Shared Components -->
     <string name="no_results_found">No results found</string>
 
     <!-- Content Descriptions -->
     <string name="cd_back">Back</string>
     <string name="cd_logo">Logo</string>
+    <string name="cd_dismiss_error">Dismiss error</string>
 
     <!-- Error States -->
     <string name="error_title_connection">Connection Issue</string>

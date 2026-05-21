@@ -42,37 +42,27 @@ import org.koin.compose.viewmodel.koinViewModel
 fun SignInScreen(
     onSignInSuccess: () -> Unit = {},
     onNavigateToSignUp: () -> Unit = {},
+    onNavigateToForgotPassword: () -> Unit = {},
     viewModel: AuthViewModel = koinViewModel()
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var error by remember { mutableStateOf<String?>(null) }
-    var loading by remember { mutableStateOf(false) }
+    var validationError by remember { mutableStateOf<String?>(null) }
+    var emailError by remember { mutableStateOf(false) }
+    var passwordError by remember { mutableStateOf(false) }
 
     val uiState by viewModel.uiState.collectAsState()
+    val isLoading = uiState is AuthUiState.Loading
+    val apiError = (uiState as? AuthUiState.Error)?.message
+    val displayError = validationError ?: apiError
 
-    LaunchedEffect(uiState) {
-        when (val state = uiState) {
-            is AuthUiState.Success -> {
-                viewModel.resetState()
-                onSignInSuccess()
-            }
-            is AuthUiState.Error -> {
-                error = state.message
-                loading = false
-            }
-            is AuthUiState.Loading -> {
-                loading = true
-                error = null
-            }
-            else -> {
-                loading = false
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is AuthEvent.NavigateToDashboard -> onSignInSuccess()
             }
         }
     }
-
-    var emailError by remember { mutableStateOf(false) }
-    var passwordError by remember { mutableStateOf(false) }
 
     val palette = LocalAppPalette.current
 
@@ -125,7 +115,7 @@ fun SignInScreen(
                 Spacer(modifier = Modifier.height(Spacing.s8))
 
                 AnimatedVisibility(
-                    visible = error != null,
+                    visible = displayError != null,
                     enter = expandVertically() + fadeIn(),
                     exit = shrinkVertically() + fadeOut()
                 ) {
@@ -147,7 +137,7 @@ fun SignInScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = error ?: "",
+                            text = displayError ?: "",
                             color = palette.error,
                             style = BodyNormal(),
                             fontWeight = FontWeight.Medium,
@@ -155,8 +145,11 @@ fun SignInScreen(
                         )
                         IconButtonComponent(
                             painter = painterResource(Res.drawable.ic_close),
-                            onClick = { error = null },
-                            contentDescription = "Dismiss error",
+                            onClick = {
+                                validationError = null
+                                viewModel.resetState()
+                            },
+                            contentDescription = stringResource(Res.string.cd_dismiss_error),
                             tint = palette.error,
                             modifier = Modifier.size(Spacing.s4)
                         )
@@ -193,7 +186,10 @@ fun SignInScreen(
                         style = BodyNormal(),
                         color = palette.primary,
                         fontWeight = FontWeight.Medium,
-                        modifier = Modifier.clickable {}
+                        modifier = Modifier.clickable {
+                            validationError = null
+                            onNavigateToForgotPassword()
+                        }
                     )
                 }
 
@@ -214,7 +210,7 @@ fun SignInScreen(
 
                 Spacer(modifier = Modifier.height(Spacing.s6))
 
-                if (loading) {
+                if (isLoading) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -231,28 +227,26 @@ fun SignInScreen(
                     FinvoraButton(
                         text = stringResource(Res.string.auth_sign_in_btn),
                         onClick = {
-                            if (!loading) {
-                                error = null
-                                emailError = false
-                                passwordError = false
+                            validationError = null
+                            emailError = false
+                            passwordError = false
 
-                                val emailVal = AuthValidator.validateEmail(email)
-                                if (emailVal is ValidationResult.Failure) {
-                                    error = emailVal.message
-                                    emailError = true
+                            val emailVal = AuthValidator.validateEmail(email)
+                            if (emailVal is ValidationResult.Failure) {
+                                validationError = emailVal.message
+                                emailError = true
+                            } else {
+                                val passwordVal = AuthValidator.validatePassword(password)
+                                if (passwordVal is ValidationResult.Failure) {
+                                    validationError = passwordVal.message
+                                    passwordError = true
                                 } else {
-                                    val passwordVal = AuthValidator.validatePassword(password)
-                                    if (passwordVal is ValidationResult.Failure) {
-                                        error = passwordVal.message
-                                        passwordError = true
-                                    } else {
-                                        viewModel.signIn(email, password)
-                                    }
+                                    viewModel.signIn(email, password)
                                 }
                             }
                         },
                         style = ButtonStyle.PRIMARY,
-                        enabled = !loading
+                        enabled = !isLoading
                     )
                 }
 
@@ -316,7 +310,7 @@ fun SignInScreen(
                         style = BodyNormal().copy(fontWeight = FontWeight.SemiBold),
                         color = palette.primary,
                         modifier = Modifier.clickable {
-                            error = null
+                            validationError = null
                             onNavigateToSignUp()
                         }
                     )

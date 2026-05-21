@@ -47,44 +47,26 @@ fun SignUpScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
-
-    var error by remember { mutableStateOf<String?>(null) }
-    var isVerificationPending by remember { mutableStateOf(false) }
-    var loading by remember { mutableStateOf(false) }
+    var validationError by remember { mutableStateOf<String?>(null) }
+    var emailError by remember { mutableStateOf(false) }
+    var passwordError by remember { mutableStateOf(false) }
+    var confirmPasswordError by remember { mutableStateOf(false) }
 
     val uiState by viewModel.uiState.collectAsState()
+    val isLoading = uiState is AuthUiState.Loading
+    val apiError = (uiState as? AuthUiState.Error)?.message
+    val displayError = validationError ?: apiError
+    val showVerificationDialog = uiState is AuthUiState.VerificationRequired
 
-    LaunchedEffect(uiState) {
-        when (val state = uiState) {
-            is AuthUiState.NeedsVerification -> {
-                viewModel.resetState()
-                isVerificationPending = true
-                loading = false
-            }
-            is AuthUiState.Success -> {
-                viewModel.resetState()
-                isVerificationPending = false
-                onSignUpSuccess()
-            }
-            is AuthUiState.Error -> {
-                error = state.message
-                loading = false
-            }
-            is AuthUiState.Loading -> {
-                loading = true
-                error = null
-            }
-            else -> {
-                loading = false
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is AuthEvent.NavigateToDashboard -> onSignUpSuccess()
             }
         }
     }
 
     val palette = LocalAppPalette.current
-
-    var emailError by remember { mutableStateOf(false) }
-    var passwordError by remember { mutableStateOf(false) }
-    var confirmPasswordError by remember { mutableStateOf(false) }
 
     AppBackgroundScreen(showTopCenterBlur = true) {
         Box(
@@ -135,7 +117,7 @@ fun SignUpScreen(
                 Spacer(modifier = Modifier.height(Spacing.s8))
 
                 AnimatedVisibility(
-                    visible = error != null,
+                    visible = displayError != null,
                     enter = expandVertically() + fadeIn(),
                     exit = shrinkVertically() + fadeOut()
                 ) {
@@ -157,7 +139,7 @@ fun SignUpScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = error ?: "",
+                            text = displayError ?: "",
                             color = palette.error,
                             style = BodyNormal(),
                             fontWeight = FontWeight.Medium,
@@ -165,8 +147,11 @@ fun SignUpScreen(
                         )
                         IconButtonComponent(
                             painter = painterResource(Res.drawable.ic_close),
-                            onClick = { error = null },
-                            contentDescription = "Dismiss error",
+                            onClick = {
+                                validationError = null
+                                viewModel.resetState()
+                            },
+                            contentDescription = stringResource(Res.string.cd_dismiss_error),
                             tint = palette.error,
                             modifier = Modifier.size(Spacing.s4)
                         )
@@ -217,7 +202,7 @@ fun SignUpScreen(
 
                 Spacer(modifier = Modifier.height(Spacing.s6))
 
-                if (loading) {
+                if (isLoading) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -234,38 +219,36 @@ fun SignUpScreen(
                     FinvoraButton(
                         text = stringResource(Res.string.auth_create_account_btn),
                         onClick = {
-                            if (!loading) {
-                                error = null
-                                emailError = false
-                                passwordError = false
-                                confirmPasswordError = false
+                            validationError = null
+                            emailError = false
+                            passwordError = false
+                            confirmPasswordError = false
 
-                                val emailVal = AuthValidator.validateEmail(email)
-                                if (emailVal is ValidationResult.Failure) {
-                                    error = emailVal.message
-                                    emailError = true
+                            val emailVal = AuthValidator.validateEmail(email)
+                            if (emailVal is ValidationResult.Failure) {
+                                validationError = emailVal.message
+                                emailError = true
+                            } else {
+                                val passwordVal = AuthValidator.validatePassword(password)
+                                if (passwordVal is ValidationResult.Failure) {
+                                    validationError = passwordVal.message
+                                    passwordError = true
                                 } else {
-                                    val passwordVal = AuthValidator.validatePassword(password)
-                                    if (passwordVal is ValidationResult.Failure) {
-                                        error = passwordVal.message
-                                        passwordError = true
+                                    val confirmVal = AuthValidator.validateConfirmPassword(
+                                        password,
+                                        confirmPassword
+                                    )
+                                    if (confirmVal is ValidationResult.Failure) {
+                                        validationError = confirmVal.message
+                                        confirmPasswordError = true
                                     } else {
-                                        val confirmVal = AuthValidator.validateConfirmPassword(
-                                            password,
-                                            confirmPassword
-                                        )
-                                        if (confirmVal is ValidationResult.Failure) {
-                                            error = confirmVal.message
-                                            confirmPasswordError = true
-                                        } else {
-                                            viewModel.signUp(email, password)
-                                        }
+                                        viewModel.signUp(email, password)
                                     }
                                 }
                             }
                         },
                         style = ButtonStyle.PRIMARY,
-                        enabled = !loading
+                        enabled = !isLoading
                     )
                 }
 
@@ -329,7 +312,7 @@ fun SignUpScreen(
                         style = BodyNormal().copy(fontWeight = FontWeight.SemiBold),
                         color = palette.primary,
                         modifier = Modifier.clickable {
-                            error = null
+                            validationError = null
                             onNavigateToSignIn()
                         }
                     )
@@ -338,15 +321,10 @@ fun SignUpScreen(
             }
         }
 
-        if (isVerificationPending) {
+        if (showVerificationDialog) {
             OtpDialog(
                 email = email,
-                onDismissRequest = { isVerificationPending = false },
-                onVerify = { code ->
-                    viewModel.verifyEmail(code)
-                },
-                loading = loading,
-                error = error
+                viewModel = viewModel
             )
         }
     }
