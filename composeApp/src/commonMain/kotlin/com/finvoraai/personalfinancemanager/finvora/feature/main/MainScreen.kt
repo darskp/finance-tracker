@@ -48,7 +48,8 @@ fun MainScreen(
                         NavRoute.Onboarding,
                         NavRoute.WelcomeScreen,
                         NavRoute.SignInScreen,
-                        NavRoute.SignUpScreen
+                        NavRoute.SignUpScreen,
+                        NavRoute.ForgotPasswordScreen
                         -> RootNavGraph.Onboarding.route
                         else -> RootNavGraph.Main.route
                     }

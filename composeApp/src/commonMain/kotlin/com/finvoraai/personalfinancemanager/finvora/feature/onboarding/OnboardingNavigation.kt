@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.finvoraai.personalfinancemanager.finvora.feature.auth.ForgotPasswordScreen
 import com.finvoraai.personalfinancemanager.finvora.feature.auth.SignInScreen
 import com.finvoraai.personalfinancemanager.finvora.feature.auth.SignUpScreen
 import com.finvoraai.personalfinancemanager.finvora.feature.welcome.WelcomeScreen
@@ -54,6 +55,22 @@ fun OnboardingNavigation(
                     navController.navigate(NavRoute.SignUpScreen) {
                         popUpTo(NavRoute.SignInScreen) { inclusive = true }
                     }
+                },
+                onNavigateToForgotPassword = {
+                    navController.navigate(NavRoute.ForgotPasswordScreen)
+                }
+            )
+        }
+
+        composable<NavRoute.ForgotPasswordScreen> {
+            ForgotPasswordScreen(
+                onResetSuccess = {
+                    navController.navigate(NavRoute.SignInScreen) {
+                        popUpTo(NavRoute.ForgotPasswordScreen) { inclusive = true }
+                    }
+                },
+                onNavigateToSignIn = {
+                    navController.popBackStack()
                 }
             )
         }

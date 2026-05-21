@@ -22,6 +22,9 @@ sealed class NavRoute {
 
     @Serializable
     data object SignUpScreen : NavRoute()
+
+    @Serializable
+    data object ForgotPasswordScreen : NavRoute()
 }
 
 /**
