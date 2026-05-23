@@ -13,13 +13,20 @@ actual class AuthManager actual constructor() {
         // Placeholder for iOS
     }
 
-    actual suspend fun signIn(email: String, password: String) {
+    actual suspend fun signIn(email: String, password: String): SignInResult {
+        // Placeholder for iOS
+        return SignInResult.Complete
+    }
+
+    actual suspend fun verifyClientTrustCode(code: String) {
         // Placeholder for iOS
     }
 
     actual suspend fun signOut() {
         // Placeholder for iOS
     }
+
+    actual fun observeIsInitialized(): Flow<Boolean> = flowOf(true)
 
     actual fun observeUser(): Flow<AuthUser?> {
         // Placeholder

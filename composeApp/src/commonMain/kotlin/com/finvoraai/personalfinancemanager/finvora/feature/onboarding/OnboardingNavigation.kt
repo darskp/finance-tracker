@@ -9,6 +9,7 @@ import com.finvoraai.personalfinancemanager.finvora.feature.auth.SignInScreen
 import com.finvoraai.personalfinancemanager.finvora.feature.auth.SignUpScreen
 import com.finvoraai.personalfinancemanager.finvora.feature.welcome.WelcomeScreen
 import com.finvoraai.personalfinancemanager.finvora.ui.navigation.NavRoute
+import org.koin.compose.viewmodel.koinViewModel
 
 /**
  * Onboarding Navigation Graph
@@ -18,6 +19,7 @@ import com.finvoraai.personalfinancemanager.finvora.ui.navigation.NavRoute
 fun OnboardingNavigation(
     navController: NavHostController,
     startDestination: NavRoute = NavRoute.WelcomeScreen,
+    onBoardingViewModel: OnBoardingViewModel = koinViewModel(),
     onAuthComplete: () -> Unit
 ) {
     NavHost(
@@ -33,7 +35,10 @@ fun OnboardingNavigation(
 
         composable<NavRoute.Onboarding> {
             OnboardingScreen(
-                onOnboardingComplete = { navController.navigate(NavRoute.SignUpScreen) }
+                onOnboardingComplete = {
+                    onBoardingViewModel.setOnboardingCompleted(true)
+                    navController.navigate(NavRoute.SignUpScreen)
+                }
             )
         }
 

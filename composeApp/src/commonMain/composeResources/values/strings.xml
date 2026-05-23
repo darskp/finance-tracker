@@ -60,11 +60,14 @@
 
     <!-- Sign In Screen -->
     <string name="auth_app_name">FinvoraAI</string>
+    <string name="auth_logout">Logout</string>
     <string name="auth_sign_in_subtitle">Intelligent wealth management for the modern era.</string>
     <string name="auth_forgot">Forgot Password?</string>
     <string name="auth_sign_in_btn">Sign In</string>
     <string name="auth_dont_have_account_prefix">Don't have an account? </string>
     <string name="auth_sign_up_link">Sign Up</string>
+    <string name="auth_back_to_sign_in">Back to Sign In</string>
+    <string name="auth_client_trust_subtitle">A verification code has been sent to your email</string>
 
     <!-- Forgot Password Screen -->
     <string name="auth_forgot_title">Reset Password</string>

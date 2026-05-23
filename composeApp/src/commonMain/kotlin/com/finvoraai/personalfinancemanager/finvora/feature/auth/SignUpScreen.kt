@@ -62,6 +62,7 @@ fun SignUpScreen(
         viewModel.events.collect { event ->
             when (event) {
                 is AuthEvent.NavigateToDashboard -> onSignUpSuccess()
+                else -> {}
             }
         }
     }

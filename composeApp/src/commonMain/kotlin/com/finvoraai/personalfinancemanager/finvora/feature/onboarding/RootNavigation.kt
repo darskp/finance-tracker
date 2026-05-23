@@ -38,7 +38,14 @@ fun RootNavigation(
         // Main App Navigation Graph
         composable(RootNavGraph.Main.route) {
             val mainNavController = rememberNavController()
-            MainNavigation(navController = mainNavController)
+            MainNavigation(
+                navController = mainNavController,
+                onNavigateToAuth = {
+                    navController.navigate(RootNavGraph.Onboarding.route) {
+                        popUpTo(RootNavGraph.Main.route) { inclusive = true }
+                    }
+                }
+            )
         }
     }
 }

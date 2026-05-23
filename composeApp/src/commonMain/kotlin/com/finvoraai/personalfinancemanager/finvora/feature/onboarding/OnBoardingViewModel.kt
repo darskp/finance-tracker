@@ -5,28 +5,26 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.ViewModel
-import com.finvoraai.personalfinancemanager.finvora.ui.navigation.NavRoute
-import kotlinx.coroutines.flow.first
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
-private const val IS_NEW_USER_PREF_KEY = "is_new_user"
+private const val HAS_COMPLETED_ONBOARDING_PREF_KEY = "has_completed_onboarding"
 
 class OnBoardingViewModel(
     val prefs: DataStore<Preferences>
 ) : ViewModel() {
 
-    private val isNewUserKey = booleanPreferencesKey(IS_NEW_USER_PREF_KEY)
+    private val hasCompletedOnboardingKey = booleanPreferencesKey(HAS_COMPLETED_ONBOARDING_PREF_KEY)
 
-    suspend fun getCurrentRoute(): NavRoute {
-        val isNewUser = prefs.data.first()[isNewUserKey] ?: true
-        if (isNewUser) {
-            return NavRoute.WelcomeScreen
+    val hasCompletedOnboarding = prefs.data.map { it[hasCompletedOnboardingKey] }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
+    fun setOnboardingCompleted(isCompleted: Boolean) {
+        viewModelScope.launch {
+            prefs.edit { it[hasCompletedOnboardingKey] = isCompleted }
         }
-
-        return NavRoute.HomeScreen
-    }
-
-    suspend fun setUserStatus(isFirstTime: Boolean): Boolean {
-        prefs.edit { it[isNewUserKey] = isFirstTime }
-        return true
     }
 }

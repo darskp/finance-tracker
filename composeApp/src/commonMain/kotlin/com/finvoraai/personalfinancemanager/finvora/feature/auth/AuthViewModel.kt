@@ -2,17 +2,20 @@ package com.finvoraai.personalfinancemanager.finvora.feature.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.finvoraai.personalfinancemanager.finvora.core.auth.AuthState
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 sealed interface AuthEvent {
     data object NavigateToDashboard : AuthEvent
+    data object NavigateToAuth : AuthEvent
 }
 
 sealed interface AuthUiState {
@@ -21,6 +24,7 @@ sealed interface AuthUiState {
     data class Error(val message: String) : AuthUiState
     data object PasswordResetCodeSent : AuthUiState
     data class VerificationRequired(val error: String? = null) : AuthUiState
+    data class ClientTrustCodeSent(val error: String? = null) : AuthUiState
 }
 
 @Suppress("TooGenericExceptionCaught")
@@ -33,6 +37,17 @@ class AuthViewModel(
         SharingStarted.WhileSubscribed(),
         null
     )
+
+    val authState = combine(
+        authManager.observeIsInitialized(),
+        authManager.observeUser()
+    ) { initialized, user ->
+        when {
+            !initialized -> AuthState.Loading
+            user == null -> AuthState.LoggedOut
+            else -> AuthState.LoggedIn(user.id, user.email)
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), AuthState.Loading)
 
     private val _uiState = MutableStateFlow<AuthUiState>(AuthUiState.Idle)
     val uiState = _uiState.asStateFlow()
@@ -69,11 +84,31 @@ class AuthViewModel(
         viewModelScope.launch {
             _uiState.value = AuthUiState.Loading
             try {
-                authManager.signIn(email, password)
+                val result = authManager.signIn(email, password)
+                when (result) {
+                    SignInResult.Complete -> {
+                        _uiState.value = AuthUiState.Idle
+                        _events.emit(AuthEvent.NavigateToDashboard)
+                    }
+                    SignInResult.ClientTrustCodeSent -> {
+                        _uiState.value = AuthUiState.ClientTrustCodeSent()
+                    }
+                }
+            } catch (e: Exception) {
+                _uiState.value = AuthUiState.Error(e.message ?: UNKNOWN_ERROR)
+            }
+        }
+    }
+
+    fun verifyClientTrustCode(code: String) {
+        viewModelScope.launch {
+            _uiState.value = AuthUiState.Loading
+            try {
+                authManager.verifyClientTrustCode(code)
                 _uiState.value = AuthUiState.Idle
                 _events.emit(AuthEvent.NavigateToDashboard)
             } catch (e: Exception) {
-                _uiState.value = AuthUiState.Error(e.message ?: UNKNOWN_ERROR)
+                _uiState.value = AuthUiState.ClientTrustCodeSent(e.message ?: UNKNOWN_ERROR)
             }
         }
     }
@@ -119,6 +154,7 @@ class AuthViewModel(
             try {
                 authManager.signOut()
                 _uiState.value = AuthUiState.Idle
+                _events.emit(AuthEvent.NavigateToAuth)
             } catch (e: Exception) {
                 _uiState.value = AuthUiState.Error(e.message ?: UNKNOWN_ERROR)
             }

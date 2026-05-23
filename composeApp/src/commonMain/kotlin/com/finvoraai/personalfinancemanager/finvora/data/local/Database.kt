@@ -4,9 +4,10 @@ import androidx.room.ConstructedBy
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.RoomDatabaseConstructor
+import com.finvoraai.personalfinancemanager.finvora.data.model.AuthSetting
 import com.finvoraai.personalfinancemanager.finvora.data.model.ThemeSetting
 
-@Database(entities = [ThemeSetting::class], version = 1)
+@Database(entities = [ThemeSetting::class, AuthSetting::class], version = 2)
 @ConstructedBy(AppDatabaseConstructor::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun getSettingsDao(): SettingsDao

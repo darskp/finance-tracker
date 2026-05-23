@@ -63,6 +63,7 @@ fun ForgotPasswordScreen(
         viewModel.events.collect { event ->
             when (event) {
                 is AuthEvent.NavigateToDashboard -> onResetSuccess()
+                else -> {}
             }
         }
     }

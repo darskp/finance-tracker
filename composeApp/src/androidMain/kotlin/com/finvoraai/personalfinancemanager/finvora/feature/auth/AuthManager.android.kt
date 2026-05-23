@@ -6,6 +6,8 @@ import com.clerk.api.network.serialization.onFailure
 import com.clerk.api.network.serialization.onSuccess
 import com.clerk.api.signin.SignIn
 import com.clerk.api.signin.attemptFirstFactor
+import com.clerk.api.signin.attemptSecondFactor
+import com.clerk.api.signin.prepareSecondFactor
 import com.clerk.api.signin.resetPassword
 import com.clerk.api.signup.SignUp
 import com.clerk.api.signup.attemptVerification
@@ -68,8 +70,11 @@ actual class AuthManager actual constructor() {
             }
     }
 
-    actual suspend fun signIn(email: String, password: String) {
+    private var pendingClientTrustSignIn: SignIn? = null
+
+    actual suspend fun signIn(email: String, password: String): SignInResult {
         println("CLERK: >>> signIn(email=$email)")
+        var signInResult: SignInResult? = null
         Clerk.auth.signInWithPassword {
             identifier = email
             this.password = password
@@ -79,9 +84,73 @@ actual class AuthManager actual constructor() {
                     "CLERK: <<< signIn SUCCESS id=${signIn.id}" +
                         " status=${signIn.status} createdSessionId=${signIn.createdSessionId}"
                 )
+                signInResult = when (signIn.status) {
+                    SignIn.Status.COMPLETE -> {
+                        val sessionId = signIn.createdSessionId
+                            ?: throw Exception("Sign-in complete but no session ID")
+                        Clerk.auth.setActive(sessionId)
+                            .onFailure { throw Exception(it.errorMessage) }
+                        println("CLERK: session activated id=$sessionId")
+                        SignInResult.Complete
+                    }
+                    SignIn.Status.NEEDS_CLIENT_TRUST -> {
+                        val emailFactor = signIn.supportedSecondFactors?.firstOrNull {
+                            it.strategy == "email_code"
+                        } ?: throw Exception(
+                            "Client trust required but email_code second factor unavailable"
+                        )
+                        pendingClientTrustSignIn = signIn
+                        println(
+                            "CLERK: preparing second factor strategy=email_code" +
+                                " emailAddressId=${emailFactor.emailAddressId}"
+                        )
+                        signIn.prepareSecondFactor("email_code")
+                            .onSuccess {
+                                println("CLERK: second factor prepared, code sent to email")
+                            }
+                            .onFailure {
+                                println("CLERK: prepareSecondFactor FAILED: ${it.errorMessage}")
+                                throw Exception(it.errorMessage)
+                            }
+                        SignInResult.ClientTrustCodeSent
+                    }
+                    else -> throw Exception("Unexpected sign-in status: ${signIn.status}")
+                }
             }
             .onFailure {
                 println("CLERK: <<< signIn FAILED: ${it.errorMessage}")
+                throw Exception(it.errorMessage)
+            }
+        return signInResult!!
+    }
+
+    actual suspend fun verifyClientTrustCode(code: String) {
+        val signIn = pendingClientTrustSignIn
+            ?: throw Exception("No client trust sign-in in progress")
+        println("CLERK: >>> verifyClientTrustCode(code=$code)")
+        signIn.attemptSecondFactor(
+            SignIn.AttemptSecondFactorParams.EmailCode(code = code)
+        )
+            .onSuccess { updatedSignIn ->
+                println(
+                    "CLERK: <<< attemptSecondFactor SUCCESS" +
+                        " status=${updatedSignIn.status}" +
+                        " createdSessionId=${updatedSignIn.createdSessionId}"
+                )
+                if (updatedSignIn.status != SignIn.Status.COMPLETE) {
+                    throw Exception(
+                        "Client trust verification failed: status=${updatedSignIn.status}"
+                    )
+                }
+                val sessionId = updatedSignIn.createdSessionId
+                    ?: throw Exception("Verification complete but no session ID")
+                Clerk.auth.setActive(sessionId)
+                    .onFailure { throw Exception(it.errorMessage) }
+                println("CLERK: session activated id=$sessionId")
+                pendingClientTrustSignIn = null
+            }
+            .onFailure {
+                println("CLERK: <<< attemptSecondFactor FAILED: ${it.errorMessage}")
                 throw Exception(it.errorMessage)
             }
     }
@@ -140,6 +209,8 @@ actual class AuthManager actual constructor() {
                 throw Exception(it.errorMessage)
             }
     }
+
+    actual fun observeIsInitialized(): Flow<Boolean> = Clerk.isInitialized
 
     actual fun observeUser(): Flow<AuthUser?> {
         println("CLERK: observeUser() called, current user=${Clerk.user?.id}")

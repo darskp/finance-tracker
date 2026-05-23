@@ -22,7 +22,7 @@ import com.finvoraai.personalfinancemanager.finvora.ui.components.SimpleBottomNa
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun MainNavigation(navController: NavHostController) {
+fun MainNavigation(navController: NavHostController, onNavigateToAuth: () -> Unit = {}) {
     // Inject MainViewModel using Koin
     val viewModel: MainViewModel = koinViewModel()
 
@@ -52,7 +52,10 @@ fun MainNavigation(navController: NavHostController) {
                 modifier = Modifier.fillMaxSize()
             ) {
                 composable<NavRoute.HomeScreen> {
-                    HomeScreen(navController)
+                    HomeScreen(
+                        navController = navController,
+                        onNavigateToAuth = onNavigateToAuth
+                    )
                 }
             }
 

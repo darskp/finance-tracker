@@ -11,12 +11,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
+import com.finvoraai.personalfinancemanager.finvora.feature.auth.AuthEvent
+import com.finvoraai.personalfinancemanager.finvora.feature.auth.AuthViewModel
 import com.finvoraai.personalfinancemanager.finvora.feature.home.components.HomePageContent
 import com.finvoraai.personalfinancemanager.finvora.ui.components.AppBackgroundScreen
 import com.finvoraai.personalfinancemanager.finvora.ui.components.HomeTopAppBar
@@ -25,9 +28,23 @@ import com.finvoraai.personalfinancemanager.finvora.ui.utils.collectAsStateLifec
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun HomeScreen(navController: NavController, viewModel: HomeScreenViewModel = koinViewModel()) {
+fun HomeScreen(
+    navController: NavController,
+    onNavigateToAuth: () -> Unit = {},
+    viewModel: HomeScreenViewModel = koinViewModel(),
+    authViewModel: AuthViewModel = koinViewModel()
+) {
     val listState = rememberLazyListState()
     val uiState by viewModel.uiState.collectAsStateLifecycleAware()
+
+    LaunchedEffect(Unit) {
+        authViewModel.events.collect { event ->
+            when (event) {
+                is AuthEvent.NavigateToAuth -> onNavigateToAuth()
+                else -> {}
+            }
+        }
+    }
 
     val isScrolled by remember {
         derivedStateOf {
@@ -42,7 +59,8 @@ fun HomeScreen(navController: NavController, viewModel: HomeScreenViewModel = ko
                     navController = navController,
                     listState = listState,
                     padding = padding,
-                    viewModel = viewModel
+                    viewModel = viewModel,
+                    authViewModel = authViewModel
                 )
 
                 AnimatedVisibility(
