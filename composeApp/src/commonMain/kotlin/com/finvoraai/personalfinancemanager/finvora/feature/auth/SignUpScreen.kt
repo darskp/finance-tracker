@@ -293,7 +293,7 @@ fun SignUpScreen(
                     )
                     FinvoraButton(
                         text = stringResource(Res.string.auth_apple),
-                        onClick = {},
+                        onClick = { viewModel.appleSignIn() },
                         style = ButtonStyle.SECONDARY,
                         modifier = Modifier.weight(1f)
                     )

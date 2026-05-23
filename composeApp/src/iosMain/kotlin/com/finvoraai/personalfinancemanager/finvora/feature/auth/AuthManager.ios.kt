@@ -37,6 +37,10 @@ actual class AuthManager actual constructor() {
         // Placeholder for iOS
     }
 
+    actual suspend fun signInWithApple() {
+        // Placeholder for iOS
+    }
+
     actual suspend fun forgotPassword(email: String) {
         // Placeholder for iOS
     }

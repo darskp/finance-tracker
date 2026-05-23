@@ -40,6 +40,18 @@ import org.koin.compose.viewmodel.koinViewModel
 
 private const val OTP_MIN_LENGTH = 6
 
+@Suppress("MagicNumber")
+private const val LOADING_INDICATOR_HEIGHT_DP = 48
+
+@Suppress("MagicNumber")
+private const val PROGRESS_STROKE_WIDTH_DP = 3
+
+@Suppress("MagicNumber")
+private const val ERROR_BG_ALPHA = 0.12f
+
+@Suppress("MagicNumber")
+private const val ERROR_BORDER_ALPHA = 0.5f
+
 @Composable
 fun SignInScreen(
     onSignInSuccess: () -> Unit = {},
@@ -149,6 +161,7 @@ fun SignInScreen(
                             }
                         },
                         onGoogleSignIn = { viewModel.googleSignIn() },
+                        onAppleSignIn = { viewModel.appleSignIn() },
                         onDismissError = {
                             validationError = null
                             viewModel.resetState()
@@ -276,6 +289,7 @@ private fun SignInFormSection(
     onPasswordChange: (String) -> Unit,
     onSignIn: () -> Unit,
     onGoogleSignIn: () -> Unit,
+    onAppleSignIn: () -> Unit,
     onDismissError: () -> Unit,
     onForgotPassword: () -> Unit,
     onNavigateToSignUp: () -> Unit
@@ -375,13 +389,15 @@ private fun SignInFormSection(
             text = stringResource(Res.string.auth_google),
             onClick = onGoogleSignIn,
             style = ButtonStyle.SECONDARY,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
+            enabled = !isLoading
         )
         FinvoraButton(
             text = stringResource(Res.string.auth_apple),
-            onClick = {},
+            onClick = onAppleSignIn,
             style = ButtonStyle.SECONDARY,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
+            enabled = !isLoading
         )
     }
 
@@ -415,12 +431,12 @@ private fun SignInErrorBanner(message: String, onDismiss: () -> Unit) {
             .fillMaxWidth()
             .padding(bottom = Spacing.s4)
             .background(
-                color = palette.error.copy(alpha = 0.12f),
+                color = palette.error.copy(alpha = ERROR_BG_ALPHA),
                 shape = RoundedCornerShape(Spacing.s3)
             )
             .border(
                 width = Spacing.hairline,
-                color = palette.error.copy(alpha = 0.5f),
+                color = palette.error.copy(alpha = ERROR_BORDER_ALPHA),
                 shape = RoundedCornerShape(Spacing.s3)
             )
             .padding(horizontal = Spacing.s4, vertical = Spacing.s3),
@@ -447,12 +463,14 @@ private fun SignInErrorBanner(message: String, onDismiss: () -> Unit) {
 @Composable
 private fun SignInLoadingIndicator() {
     Box(
-        modifier = Modifier.fillMaxWidth().height(48.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(LOADING_INDICATOR_HEIGHT_DP.dp),
         contentAlignment = Alignment.Center
     ) {
         CircularProgressIndicator(
             color = LocalAppPalette.current.primary,
-            strokeWidth = 3.dp,
+            strokeWidth = PROGRESS_STROKE_WIDTH_DP.dp,
             modifier = Modifier.size(Spacing.s6)
         )
     }

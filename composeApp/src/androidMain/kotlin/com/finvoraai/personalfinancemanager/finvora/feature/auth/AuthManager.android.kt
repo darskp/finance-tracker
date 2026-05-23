@@ -233,4 +233,14 @@ actual class AuthManager actual constructor() {
                 throw Exception(it.errorMessage)
             }
     }
+
+    actual suspend fun signInWithApple() {
+        println("CLERK: >>> signInWithApple()")
+        Clerk.auth.signInWithOAuth(OAuthProvider.APPLE)
+            .onSuccess { println("CLERK: <<< signInWithApple SUCCESS") }
+            .onFailure {
+                println("CLERK: <<< signInWithApple FAILED: ${it.errorMessage}")
+                throw Exception(it.errorMessage)
+            }
+    }
 }

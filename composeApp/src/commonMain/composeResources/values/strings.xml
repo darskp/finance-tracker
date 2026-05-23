@@ -88,6 +88,8 @@
     <string name="cd_back">Back</string>
     <string name="cd_logo">Logo</string>
     <string name="cd_dismiss_error">Dismiss error</string>
+    <string name="cd_sign_in_with_google">Sign in with Google</string>
+    <string name="cd_sign_in_with_apple">Sign in with Apple</string>
 
     <!-- Error States -->
     <string name="error_title_connection">Connection Issue</string>

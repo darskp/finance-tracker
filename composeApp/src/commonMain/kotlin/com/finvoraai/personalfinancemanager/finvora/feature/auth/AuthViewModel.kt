@@ -129,11 +129,26 @@ class AuthViewModel(
 
     fun googleSignIn() {
         viewModelScope.launch {
+            _uiState.value = AuthUiState.Loading
             try {
                 authManager.signInWithGoogle()
+                _uiState.value = AuthUiState.Idle
                 _events.emit(AuthEvent.NavigateToDashboard)
             } catch (e: Exception) {
                 _uiState.value = AuthUiState.Error(e.message ?: GOOGLE_ERROR)
+            }
+        }
+    }
+
+    fun appleSignIn() {
+        viewModelScope.launch {
+            _uiState.value = AuthUiState.Loading
+            try {
+                authManager.signInWithApple()
+                _uiState.value = AuthUiState.Idle
+                _events.emit(AuthEvent.NavigateToDashboard)
+            } catch (e: Exception) {
+                _uiState.value = AuthUiState.Error(e.message ?: UNKNOWN_ERROR)
             }
         }
     }
