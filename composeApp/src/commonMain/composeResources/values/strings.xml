@@ -52,8 +52,6 @@
     <!-- OTP / Verification Screen -->
     <string name="auth_verify_email_title">Verify Your Email</string>
     <string name="auth_verify_email_subtitle">Enter the 6-digit code sent to %1$s</string>
-    <string name="auth_verification_code_label">Verification Code</string>
-    <string name="auth_verification_code_placeholder">Enter 6-digit code</string>
     <string name="auth_verify_complete_btn">Verify &amp; Complete Setup</string>
     <string name="auth_otp_resend_timer">Resend code in 00:%1$s</string>
     <string name="auth_otp_resend_action">Resend Code</string>
@@ -74,8 +72,6 @@
     <string name="auth_forgot_subtitle">Enter your email to receive a reset code</string>
     <string name="auth_forgot_send_code_btn">Send Reset Code</string>
     <string name="auth_forgot_code_sent_subtitle">Enter the code sent to %1$s</string>
-    <string name="auth_forgot_code_label">Reset Code</string>
-    <string name="auth_forgot_code_placeholder">Enter 6-digit code</string>
     <string name="auth_forgot_new_password_label">New Password</string>
     <string name="auth_forgot_confirm_new_password_label">Confirm New Password</string>
     <string name="auth_forgot_reset_btn">Reset Password</string>

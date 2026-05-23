@@ -26,6 +26,7 @@ import com.finvoraai.personalfinancemanager.finvora.ui.components.AppTextField
 import com.finvoraai.personalfinancemanager.finvora.ui.components.ButtonStyle
 import com.finvoraai.personalfinancemanager.finvora.ui.components.FinvoraButton
 import com.finvoraai.personalfinancemanager.finvora.ui.components.IconButtonComponent
+import com.finvoraai.personalfinancemanager.finvora.ui.components.OtpInputField
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.BodyLarge
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.BodyNormal
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.H2TextStyle
@@ -211,14 +212,12 @@ fun ForgotPasswordScreen(
                         )
                     }
                 } else {
-                    AppTextField(
+                    OtpInputField(
                         value = code,
                         onValueChange = {
                             code = it
                             codeError = false
                         },
-                        label = stringResource(Res.string.auth_forgot_code_label),
-                        placeholder = stringResource(Res.string.auth_forgot_code_placeholder),
                         isError = codeError
                     )
 

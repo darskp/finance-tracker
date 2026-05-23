@@ -26,6 +26,7 @@ import com.finvoraai.personalfinancemanager.finvora.ui.components.AppTextField
 import com.finvoraai.personalfinancemanager.finvora.ui.components.ButtonStyle
 import com.finvoraai.personalfinancemanager.finvora.ui.components.FinvoraButton
 import com.finvoraai.personalfinancemanager.finvora.ui.components.IconButtonComponent
+import com.finvoraai.personalfinancemanager.finvora.ui.components.OtpInputField
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.BodyLarge
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.BodyNormal
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.BodySmall
@@ -198,25 +199,6 @@ private fun ClientTrustSection(
     val palette = LocalAppPalette.current
 
     Text(
-        text = stringResource(Res.string.auth_app_name),
-        style = H2TextStyle(),
-        color = palette.primary,
-        fontWeight = FontWeight.Bold,
-        textAlign = TextAlign.Center
-    )
-
-    Spacer(modifier = Modifier.height(Spacing.s2))
-
-    Text(
-        text = stringResource(Res.string.auth_sign_in_subtitle),
-        style = BodyLarge(),
-        color = palette.textSecondary,
-        textAlign = TextAlign.Center
-    )
-
-    Spacer(modifier = Modifier.height(Spacing.s8))
-
-    Text(
         text = stringResource(Res.string.auth_verify_email_title),
         style = H2TextStyle(),
         color = palette.primary,
@@ -242,11 +224,12 @@ private fun ClientTrustSection(
         )
     }
 
-    AppTextField(
+    OtpInputField(
         value = clientTrustCode,
-        onValueChange = onCodeChange,
-        label = stringResource(Res.string.auth_verification_code_label),
-        placeholder = stringResource(Res.string.auth_verification_code_placeholder),
+        onValueChange = {
+            onCodeChange(it)
+            if (it.length == OTP_MIN_LENGTH) onVerify()
+        },
         isError = clientTrustError != null
     )
 
@@ -295,6 +278,24 @@ private fun SignInFormSection(
     onNavigateToSignUp: () -> Unit
 ) {
     val palette = LocalAppPalette.current
+    Text(
+        text = stringResource(Res.string.auth_app_name),
+        style = H2TextStyle(),
+        color = palette.primary,
+        fontWeight = FontWeight.Bold,
+        textAlign = TextAlign.Center
+    )
+
+    Spacer(modifier = Modifier.height(Spacing.s2))
+
+    Text(
+        text = stringResource(Res.string.auth_sign_in_subtitle),
+        style = BodyLarge(),
+        color = palette.textSecondary,
+        textAlign = TextAlign.Center
+    )
+
+    Spacer(modifier = Modifier.height(Spacing.s8))
 
     AnimatedVisibility(
         visible = displayError != null,
