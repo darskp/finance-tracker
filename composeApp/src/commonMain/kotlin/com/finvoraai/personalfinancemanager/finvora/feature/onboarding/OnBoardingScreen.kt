@@ -246,7 +246,7 @@ fun OnboardingScreen(
                         modifier = Modifier.weight(1f),
                         onClick = {
                             scope.launch {
-                                onBoardingViewModel.setUserStatus(false)
+                                onBoardingViewModel.setOnboardingCompleted(true)
                                 onOnboardingComplete()
                             }
                         }

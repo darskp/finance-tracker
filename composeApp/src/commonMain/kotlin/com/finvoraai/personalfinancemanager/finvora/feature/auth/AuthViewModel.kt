@@ -3,6 +3,7 @@ package com.finvoraai.personalfinancemanager.finvora.feature.auth
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.finvoraai.personalfinancemanager.finvora.core.auth.AuthState
+import com.finvoraai.personalfinancemanager.finvora.core.debug.DebugLogger
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -42,11 +43,16 @@ class AuthViewModel(
         authManager.observeIsInitialized(),
         authManager.observeUser()
     ) { initialized, user ->
-        when {
+        val state = when {
             !initialized -> AuthState.Loading
             user == null -> AuthState.LoggedOut
             else -> AuthState.LoggedIn(user.id, user.email)
         }
+        DebugLogger.auth("authState", state)
+        DebugLogger.auth("userId", user?.id)
+        DebugLogger.auth("userEmail", user?.email)
+        DebugLogger.auth("clerkInitialized", initialized)
+        state
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), AuthState.Loading)
 
     private val _uiState = MutableStateFlow<AuthUiState>(AuthUiState.Idle)
@@ -54,6 +60,14 @@ class AuthViewModel(
 
     private val _events = MutableSharedFlow<AuthEvent>()
     val events: SharedFlow<AuthEvent> = _events.asSharedFlow()
+
+    init {
+        viewModelScope.launch {
+            _uiState.collect { state ->
+                DebugLogger.auth("uiState", state)
+            }
+        }
+    }
 
     fun signUp(email: String, password: String) {
         viewModelScope.launch {

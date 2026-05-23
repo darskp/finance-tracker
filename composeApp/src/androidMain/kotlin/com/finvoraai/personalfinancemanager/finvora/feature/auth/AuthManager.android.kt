@@ -72,6 +72,7 @@ actual class AuthManager actual constructor() {
 
     private var pendingClientTrustSignIn: SignIn? = null
 
+    @Suppress("ThrowsCount")
     actual suspend fun signIn(email: String, password: String): SignInResult {
         println("CLERK: >>> signIn(email=$email)")
         var signInResult: SignInResult? = null
@@ -124,6 +125,7 @@ actual class AuthManager actual constructor() {
         return signInResult!!
     }
 
+    @Suppress("ThrowsCount")
     actual suspend fun verifyClientTrustCode(code: String) {
         val signIn = pendingClientTrustSignIn
             ?: throw Exception("No client trust sign-in in progress")

@@ -750,7 +750,53 @@ This becomes critical in:
 
 ---
 
-# 🏛️ 20. BUILD FOR SCALE, NOT JUST FOR TODAY
+# 🐞 20. DEVELOPMENT DEBUG OVERLAY SYSTEM (MANDATORY FOR DEV BUILDS)
+
+FinvoraAI includes an internal Developer Debug Overlay System inspired by Redux DevTools / React state inspectors.
+
+This system exists to help developers visually inspect:
+
+ViewModel state
+API responses
+Room database rows
+Navigation state
+Auth/session state
+Loading/error states
+Computed frontend variables
+Recomposition/debug traces
+
+directly inside the running app — even on APK-only builds without Android Studio attached.
+
+🎯 PURPOSE
+
+Modern finance apps contain:
+
+complex auth flows
+onboarding routing
+session restoration
+multiple API layers
+calculated frontend state
+database synchronization
+
+Relying only on Logcat becomes painful.
+
+The Debug Overlay provides:
+
+**React Redux DevTools-like visibility** BUT inside Jetpack Compose!
+
+### 🎯 MANDATORY CHECKLIST BEFORE PUSHING NEW FEATURES
+Every time you build a new feature (e.g. `IncomeViewModel`), you **must** expose its state to the Debug Overlay before submitting a PR.
+
+👉 **REFER TO THIS GUIDE FOR INSTRUCTIONS:** 
+[docs/DEBUG_OVERLAY_GUIDE.md](file:///c:/Users/darsw/Downloads/practice/FinvoraAI/docs/DEBUG_OVERLAY_GUIDE.md)
+
+**Quick Usage:**
+```kotlin
+// Inside your new ViewModel:
+DebugLogger.generic("Income", "balanceState", state)
+```
+
+# 🏛️ 21. BUILD FOR SCALE, NOT JUST FOR TODAY
 
 Every new feature should assume:
 

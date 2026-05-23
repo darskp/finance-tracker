@@ -2,6 +2,7 @@ package com.finvoraai.personalfinancemanager.finvora.feature.main
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -11,9 +12,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.finvoraai.personalfinancemanager.finvora.core.auth.AuthState
+import com.finvoraai.personalfinancemanager.finvora.core.debug.DebugBuildCheck
+import com.finvoraai.personalfinancemanager.finvora.core.debug.DebugFloatingButton
+import com.finvoraai.personalfinancemanager.finvora.core.debug.DebugLogger
+import com.finvoraai.personalfinancemanager.finvora.core.debug.DebugOverlay
 import com.finvoraai.personalfinancemanager.finvora.feature.auth.AuthViewModel
 import com.finvoraai.personalfinancemanager.finvora.feature.onboarding.OnBoardingViewModel
 import com.finvoraai.personalfinancemanager.finvora.feature.onboarding.RootNavigation
@@ -24,6 +31,8 @@ import kotlinx.coroutines.delay
 import org.koin.compose.viewmodel.koinViewModel
 
 private const val SPLASH_TIMEOUT_MS = 5000L
+private const val KEY_LOCKED_DESTINATION = "lockedDestination"
+private const val KEY_INITIAL_ROUTE = "initialRoute"
 
 @Composable
 fun MainScreen(
@@ -48,6 +57,8 @@ fun MainScreen(
             is AuthState.LoggedIn -> {
                 lockedDestination = RootNavGraph.Main.route
                 initialRoute = NavRoute.HomeScreen
+                DebugLogger.navigation(KEY_LOCKED_DESTINATION, lockedDestination)
+                DebugLogger.navigation(KEY_INITIAL_ROUTE, initialRoute)
             }
             is AuthState.LoggedOut -> {
                 lockedDestination = RootNavGraph.Onboarding.route
@@ -56,6 +67,8 @@ fun MainScreen(
                 } else {
                     initialRoute = NavRoute.WelcomeScreen
                 }
+                DebugLogger.navigation(KEY_LOCKED_DESTINATION, lockedDestination)
+                DebugLogger.navigation(KEY_INITIAL_ROUTE, initialRoute)
             }
             else -> {}
         }
@@ -68,6 +81,8 @@ fun MainScreen(
             if (lockedDestination == null) {
                 lockedDestination = RootNavGraph.Onboarding.route
                 initialRoute = NavRoute.WelcomeScreen
+                DebugLogger.navigation(KEY_LOCKED_DESTINATION, "TIMEOUT -> $lockedDestination")
+                DebugLogger.navigation(KEY_INITIAL_ROUTE, "TIMEOUT -> $initialRoute")
             }
         }
     }
@@ -87,10 +102,17 @@ fun MainScreen(
 
             if (showSplashAnimation || lockedDestination == null) {
                 SplashScreen(onComplete = {
-                    if (lockedDestination != null) {
-                        showSplashAnimation = false
-                    }
+                    showSplashAnimation = false
                 })
+            }
+
+            if (DebugBuildCheck.isDebug()) {
+                DebugOverlay()
+                DebugFloatingButton(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(top = 48.dp, end = 16.dp)
+                )
             }
         }
     }
