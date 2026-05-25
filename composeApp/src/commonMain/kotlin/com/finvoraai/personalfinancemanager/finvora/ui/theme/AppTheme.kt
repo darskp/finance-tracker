@@ -14,6 +14,8 @@ import androidx.compose.ui.text.font.FontWeight
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.palette.BaseThemePalette
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.palette.Dark
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.palette.Light
+import com.finvoraai.personalfinancemanager.finvora.ui.theme.palette.Amoled
+import com.finvoraai.personalfinancemanager.finvora.ui.theme.palette.Ocean
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.tokens.AppGradients
 
 // Define CompositionLocals
@@ -25,6 +27,8 @@ fun getAppPalette(theme: String?, systemIsDark: Boolean): BaseThemePalette {
     return when (theme?.lowercase()) {
         "light" -> Light
         "dark" -> Dark
+        "amoled" -> Amoled
+        "ocean" -> Ocean
         "system" -> if (systemIsDark) Dark else Light
         else -> Light
     }

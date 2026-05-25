@@ -139,6 +139,8 @@ fun ThemeSelectorDialog(currentTheme: String, onDismiss: () -> Unit, onThemeSele
     val themes = listOf(
         "Light" to Res.string.theme_light,
         "Dark" to Res.string.theme_dark,
+        "Amoled" to Res.string.theme_amoled,
+        "Ocean" to Res.string.theme_ocean,
         "System" to Res.string.theme_system
     )
 

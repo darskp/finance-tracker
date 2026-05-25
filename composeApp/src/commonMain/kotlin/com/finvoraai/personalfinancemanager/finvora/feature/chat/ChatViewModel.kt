@@ -34,6 +34,8 @@ class ChatViewModel(
             val labelRes = when (themeStr.lowercase()) {
                 "dark" -> Res.string.theme_dark
                 "light" -> Res.string.theme_light
+                "amoled" -> Res.string.theme_amoled
+                "ocean" -> Res.string.theme_ocean
                 else -> Res.string.theme_system
             }
             ChatUiState(
