@@ -5,23 +5,23 @@ import androidx.compose.ui.graphics.Color
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.tokens.AppGradients
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.tokens.StaticColors
 
-object Light : BaseThemePalette {
+object Ocean : BaseThemePalette {
 
     // --- Brand Design Tokens ---
-    private val BrandPrimary = Color(0xFFC99700) // Modern Premium Gold
-    private val BrandSecondary = Color(0xFFF5F2EA)
-    private val BrandBackground = Color(0xFFFFFCF8)
+    private val BrandPrimary = Color(0xFF2EA7FF)
+    private val BrandSecondary = Color(0xFFEAF4FB)
+    private val BrandBackground = Color(0xFFF7FBFF)
     private val BrandSurface = Color(0xFFFFFFFF)
-    private val BrandOutline = Color(0xFFD8CCB5)
+    private val BrandOutline = Color(0xFFD2E3F0)
 
-    private val TextPrimary = Color(0xFF111111)
-    private val TextSecondary = Color(0xFF5A5A5A)
-    private val OnBrandPrimary = Color(0xFF111111)
+    private val TextPrimary = Color(0xFF0F172A)
+    private val TextSecondary = Color(0xFF526072)
+    private val OnBrandPrimary = StaticColors.White
 
     // --- Feedback ---
-    override val success = Color(0xFF2E7D32) // Emerald Green
-    override val warning = Color(0xFFEF6C00) // Deep Orange
-    override val error = Color(0xFFB3261E)
+    override val success = Color(0xFF2E7D32)
+    override val warning = Color(0xFFEF6C00)
+    override val error = Color(0xFFC62828)
     override val onError = StaticColors.White
 
     // --- Core Palette ---
@@ -53,9 +53,9 @@ object Light : BaseThemePalette {
     override val gradients = AppGradients(
         screenBackground = Brush.verticalGradient(
             colors = listOf(
-                Color(0xFFFFFCF8),
-                Color(0xFFFAF5EA),
-                Color(0xFFFFFCF8)
+                Color(0xFFF7FBFF),
+                Color(0xFFEEF7FF),
+                Color(0xFFF7FBFF)
             )
         ),
 
@@ -68,13 +68,13 @@ object Light : BaseThemePalette {
 
         onboardingNextGradient = listOf(
             BrandPrimary,
-            Color(0xFFFFD76A)
+            Color(0xFF67C6FF)
         ),
 
         onboardingExploreGradient = listOf(
             BrandPrimary,
-            Color(0xFFD6A319),
-            Color(0xFFB8860B)
+            Color(0xFF4AB6FF),
+            Color(0xFF178BDB)
         )
     )
 }

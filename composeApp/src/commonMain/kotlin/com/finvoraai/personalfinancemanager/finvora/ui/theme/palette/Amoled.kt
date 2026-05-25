@@ -5,31 +5,31 @@ import androidx.compose.ui.graphics.Color
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.tokens.AppGradients
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.tokens.StaticColors
 
-object Light : BaseThemePalette {
+object Amoled : BaseThemePalette {
 
     // --- Brand Design Tokens ---
-    private val BrandPrimary = Color(0xFFC99700) // Modern Premium Gold
-    private val BrandSecondary = Color(0xFFF5F2EA)
-    private val BrandBackground = Color(0xFFFFFCF8)
-    private val BrandSurface = Color(0xFFFFFFFF)
-    private val BrandOutline = Color(0xFFD8CCB5)
+    private val BrandPrimary = Color(0xFF4FDEA3)
+    private val BrandSecondary = Color(0xFF0B0B0B)
+    private val BrandBackground = Color(0xFF000000)
+    private val BrandSurface = Color(0xFF101010)
+    private val BrandOutline = Color(0xFF242424)
 
-    private val TextPrimary = Color(0xFF111111)
-    private val TextSecondary = Color(0xFF5A5A5A)
-    private val OnBrandPrimary = Color(0xFF111111)
+    private val TextPrimary = Color(0xFFF5F5F5)
+    private val TextSecondary = Color(0xFFB8B8B8)
+    private val OnBrandPrimary = Color(0xFF002B1C)
 
     // --- Feedback ---
-    override val success = Color(0xFF2E7D32) // Emerald Green
-    override val warning = Color(0xFFEF6C00) // Deep Orange
-    override val error = Color(0xFFB3261E)
-    override val onError = StaticColors.White
+    override val success = Color(0xFF81C784)
+    override val warning = Color(0xFFFFB74D)
+    override val error = Color(0xFFF2B8B5)
+    override val onError = Color(0xFF601410)
 
     // --- Core Palette ---
     override val primary = BrandPrimary
     override val onPrimary = OnBrandPrimary
     override val secondary = BrandSecondary
     override val onSecondary = TextPrimary
-    override val isDark = false
+    override val isDark = true
 
     // --- Backgrounds & Surfaces ---
     override val background = BrandBackground
@@ -53,9 +53,9 @@ object Light : BaseThemePalette {
     override val gradients = AppGradients(
         screenBackground = Brush.verticalGradient(
             colors = listOf(
-                Color(0xFFFFFCF8),
-                Color(0xFFFAF5EA),
-                Color(0xFFFFFCF8)
+                Color(0xFF000000),
+                Color(0xFF050505),
+                Color(0xFF000000)
             )
         ),
 
@@ -68,13 +68,13 @@ object Light : BaseThemePalette {
 
         onboardingNextGradient = listOf(
             BrandPrimary,
-            Color(0xFFFFD76A)
+            Color(0xFF34D399)
         ),
 
         onboardingExploreGradient = listOf(
             BrandPrimary,
-            Color(0xFFD6A319),
-            Color(0xFFB8860B)
+            Color(0xFF10B981),
+            Color(0xFF059669)
         )
     )
 }
