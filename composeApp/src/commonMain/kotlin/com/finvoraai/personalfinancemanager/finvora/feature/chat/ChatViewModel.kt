@@ -8,6 +8,7 @@ import com.finvoraai.personalfinancemanager.finvora.data.model.ThemeSetting
 import finvoraai.composeapp.generated.resources.Res
 import finvoraai.composeapp.generated.resources.theme_dark
 import finvoraai.composeapp.generated.resources.theme_light
+import finvoraai.composeapp.generated.resources.theme_ocean
 import finvoraai.composeapp.generated.resources.theme_system
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -34,7 +35,6 @@ class ChatViewModel(
             val labelRes = when (themeStr.lowercase()) {
                 "dark" -> Res.string.theme_dark
                 "light" -> Res.string.theme_light
-                "amoled" -> Res.string.theme_amoled
                 "ocean" -> Res.string.theme_ocean
                 else -> Res.string.theme_system
             }

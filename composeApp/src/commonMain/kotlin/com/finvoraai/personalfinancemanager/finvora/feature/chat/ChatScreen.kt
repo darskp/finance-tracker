@@ -44,6 +44,7 @@ import finvoraai.composeapp.generated.resources.current_theme_label
 import finvoraai.composeapp.generated.resources.select_theme_title
 import finvoraai.composeapp.generated.resources.theme_dark
 import finvoraai.composeapp.generated.resources.theme_light
+import finvoraai.composeapp.generated.resources.theme_ocean
 import finvoraai.composeapp.generated.resources.theme_system
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -139,7 +140,6 @@ fun ThemeSelectorDialog(currentTheme: String, onDismiss: () -> Unit, onThemeSele
     val themes = listOf(
         "Light" to Res.string.theme_light,
         "Dark" to Res.string.theme_dark,
-        "Amoled" to Res.string.theme_amoled,
         "Ocean" to Res.string.theme_ocean,
         "System" to Res.string.theme_system
     )
