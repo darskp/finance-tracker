@@ -13,6 +13,9 @@ import com.finvoraai.personalfinancemanager.finvora.ui.animatedBottomBar.models.
 import com.finvoraai.personalfinancemanager.finvora.ui.navigation.NavRoute
 import finvoraai.composeapp.generated.resources.Res
 import finvoraai.composeapp.generated.resources.home
+import finvoraai.composeapp.generated.resources.ic_chat
+import finvoraai.composeapp.generated.resources.nav_chat
+import finvoraai.composeapp.generated.resources.nav_home
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -38,8 +41,13 @@ class MainViewModel(
     val bottomNavItems = listOf(
         NavItem(
             icon = IconSource.Drawable(Res.drawable.home),
-            label = "Home",
+            label = Res.string.nav_home,
             route = NavRoute.HomeScreen
+        ),
+        NavItem(
+            icon = IconSource.Drawable(Res.drawable.ic_chat),
+            label = Res.string.nav_chat,
+            route = NavRoute.ChatScreen
         )
     )
 

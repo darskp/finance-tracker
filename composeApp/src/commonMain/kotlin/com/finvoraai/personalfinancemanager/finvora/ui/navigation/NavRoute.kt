@@ -18,6 +18,9 @@ sealed class NavRoute {
     data object HomeScreen : NavRoute()
 
     @Serializable
+    data object ChatScreen : NavRoute()
+
+    @Serializable
     data object SignInScreen : NavRoute()
 
     @Serializable

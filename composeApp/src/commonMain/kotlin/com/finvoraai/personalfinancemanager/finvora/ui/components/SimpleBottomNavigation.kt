@@ -30,6 +30,7 @@ import com.finvoraai.personalfinancemanager.finvora.ui.theme.BodyNormal
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.LocalAppPalette
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.Spacing
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun SimpleBottomNavigation(
@@ -65,6 +66,7 @@ fun SimpleBottomNavigation(
 private fun SimpleNavItemContent(item: NavItem, isSelected: Boolean, onClick: () -> Unit) {
     val palette = LocalAppPalette.current
     val interactionSource = remember { MutableInteractionSource() }
+    val labelText = stringResource(item.label)
 
     Box(
         modifier = Modifier
@@ -91,7 +93,7 @@ private fun SimpleNavItemContent(item: NavItem, isSelected: Boolean, onClick: ()
         ) {
             RenderSimpleIcon(
                 icon = item.icon,
-                contentDescription = item.label,
+                contentDescription = labelText,
                 tint = if (isSelected) palette.primary else palette.textSecondary,
                 modifier = Modifier.size(Spacing.s6)
             )
@@ -99,7 +101,7 @@ private fun SimpleNavItemContent(item: NavItem, isSelected: Boolean, onClick: ()
             if (isSelected) {
                 Spacer(modifier = Modifier.size(Spacing.s2))
                 Text(
-                    text = item.label,
+                    text = labelText,
                     style = BodyNormal().copy(
                         color = palette.primary,
                         fontWeight = FontWeight.SemiBold

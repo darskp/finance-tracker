@@ -24,6 +24,8 @@ import com.finvoraai.personalfinancemanager.finvora.ui.animatedBottomBar.models.
 import com.finvoraai.personalfinancemanager.finvora.ui.animatedBottomBar.util.RenderIcon
 import com.finvoraai.personalfinancemanager.finvora.ui.animatedBottomBar.util.bounceClickable
 
+import org.jetbrains.compose.resources.stringResource
+
 @Composable
 fun BottomNavItem(
     item: NavItem,
@@ -53,19 +55,20 @@ fun BottomNavItem(
                 enter = fadeIn() + scaleIn(),
                 exit = fadeOut() + scaleOut()
             ) {
+                val labelText = stringResource(item.label)
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     RenderIcon(
                         iconSource = item.icon,
-                        contentDescription = item.label,
+                        contentDescription = labelText,
                         tint = iconTint,
                         modifier = Modifier.size(iconSize)
                     )
 
                     if (showLabel) {
                         Text(
-                            text = item.label,
+                            text = labelText,
                             fontSize = textSize,
                             color = textColor
                         )

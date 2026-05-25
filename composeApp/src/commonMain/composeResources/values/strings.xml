@@ -8,7 +8,15 @@
 
     <!-- Navigation -->
     <string name="nav_home">Home</string>
+    <string name="nav_chat">Chat</string>
     <string name="nav_settings">Settings</string>
+
+    <!-- Chat Screen -->
+    <string name="chat_screen_title">AI Chat Assistant</string>
+    <string name="chat_current_theme_label">Current Database Theme Status:</string>
+    <string name="chat_theme_dark">Dark Mode (Enabled)</string>
+    <string name="chat_theme_light">Light Mode (Disabled)</string>
+    <string name="chat_theme_not_set">Not Configured / Unknown</string>
 
     <!-- Home Screen -->
     <string name="home_dashboard_placeholder">Dashboard screen</string>

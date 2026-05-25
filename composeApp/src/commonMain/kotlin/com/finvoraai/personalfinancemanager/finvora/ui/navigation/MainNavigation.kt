@@ -16,6 +16,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.finvoraai.personalfinancemanager.finvora.feature.chat.ChatScreen
 import com.finvoraai.personalfinancemanager.finvora.feature.home.HomeScreen
 import com.finvoraai.personalfinancemanager.finvora.feature.main.MainViewModel
 import com.finvoraai.personalfinancemanager.finvora.ui.components.SimpleBottomNavigation
@@ -55,6 +56,12 @@ fun MainNavigation(navController: NavHostController, onNavigateToAuth: () -> Uni
                     HomeScreen(
                         navController = navController,
                         onNavigateToAuth = onNavigateToAuth
+                    )
+                }
+
+                composable<NavRoute.ChatScreen> {
+                    ChatScreen(
+                        navController = navController
                     )
                 }
             }
