@@ -28,6 +28,8 @@ import org.koin.compose.viewmodel.koinViewModel
 
 private const val KEY_LOCKED_DESTINATION = "lockedDestination"
 private const val KEY_INITIAL_ROUTE = "initialRoute"
+private const val KEY_STATE = "state"
+private const val KEY_TRANSITION = "transition"
 
 @Composable
 fun MainScreen(
@@ -46,11 +48,11 @@ fun MainScreen(
         DebugLogger.navigation("startupDestinationChanged", startupDestination.toString())
         when (val destination = startupDestination) {
             is StartupDestination.Loading -> {
-                DebugLogger.navigation("state", "Loading - Showing Splash")
+                DebugLogger.navigation(KEY_STATE, "Loading - Showing Splash")
             }
             is StartupDestination.Onboarding -> {
                 val targetRoute = destination.initialRoute
-                DebugLogger.navigation("state", "Onboarding - Target: $targetRoute")
+                DebugLogger.navigation(KEY_STATE, "Onboarding - Target: $targetRoute")
                 if (lockedDestination == null) {
                     // Cold start: set initial destination
                     lockedDestination = RootNavGraph.Onboarding.route
@@ -60,7 +62,7 @@ fun MainScreen(
                 } else if (lockedDestination == RootNavGraph.Main.route) {
                     // Logout transition (cold started on Main):
                     // Navigate to Onboarding, keeping Main at the bottom of the stack
-                    DebugLogger.navigation("transition", "LOGOUT -> Navigate to Onboarding")
+                    DebugLogger.navigation(KEY_TRANSITION, "LOGOUT -> Navigate to Onboarding")
                     initialRoute = targetRoute
                     DebugLogger.navigation(KEY_INITIAL_ROUTE, initialRoute)
                     navController.navigate(RootNavGraph.Onboarding.route) {
@@ -69,14 +71,14 @@ fun MainScreen(
                 } else {
                     // Logout transition (cold started on Onboarding):
                     // Pop back to the Onboarding graph that is at the bottom of the stack
-                    DebugLogger.navigation("transition", "LOGOUT -> Pop back to Onboarding")
+                    DebugLogger.navigation(KEY_TRANSITION, "LOGOUT -> Pop back to Onboarding")
                     initialRoute = targetRoute
                     DebugLogger.navigation(KEY_INITIAL_ROUTE, initialRoute)
                     navController.popBackStack(RootNavGraph.Onboarding.route, inclusive = false)
                 }
             }
             is StartupDestination.Main -> {
-                DebugLogger.navigation("state", "Main - Authenticated Graph")
+                DebugLogger.navigation(KEY_STATE, "Main - Authenticated Graph")
                 if (lockedDestination == null) {
                     // Cold start: set initial destination
                     lockedDestination = RootNavGraph.Main.route
@@ -86,7 +88,7 @@ fun MainScreen(
                 } else if (lockedDestination == RootNavGraph.Onboarding.route) {
                     // Login transition (cold started on Onboarding):
                     // Navigate to Main, keeping Onboarding at the bottom of the stack
-                    DebugLogger.navigation("transition", "LOGIN -> Navigate to Main")
+                    DebugLogger.navigation(KEY_TRANSITION, "LOGIN -> Navigate to Main")
                     initialRoute = NavRoute.HomeScreen
                     navController.navigate(RootNavGraph.Main.route) {
                         popUpTo(RootNavGraph.Onboarding.route) { inclusive = false }
@@ -94,7 +96,7 @@ fun MainScreen(
                 } else {
                     // Login transition (cold started on Main):
                     // Pop back to the Main graph that is at the bottom of the stack
-                    DebugLogger.navigation("transition", "LOGIN -> Pop back to Main")
+                    DebugLogger.navigation(KEY_TRANSITION, "LOGIN -> Pop back to Main")
                     initialRoute = NavRoute.HomeScreen
                     navController.popBackStack(RootNavGraph.Main.route, inclusive = false)
                 }
@@ -132,4 +134,3 @@ fun MainScreen(
         }
     }
 }
-

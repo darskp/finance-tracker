@@ -13,6 +13,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.text.font.FontWeight
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.palette.BaseThemePalette
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.palette.Dark
+import com.finvoraai.personalfinancemanager.finvora.ui.theme.palette.Light
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.tokens.AppGradients
 
 // Define CompositionLocals
@@ -20,8 +21,14 @@ val LocalIsDarkTheme = staticCompositionLocalOf { true }
 val LocalAppPalette = staticCompositionLocalOf<BaseThemePalette> { Dark }
 val LocalAppGradients = staticCompositionLocalOf<AppGradients> { Dark.gradients }
 
-@Suppress("UnusedParameter")
-fun getAppPalette(theme: String?, systemIsDark: Boolean): BaseThemePalette = Dark
+fun getAppPalette(theme: String?, systemIsDark: Boolean): BaseThemePalette {
+    return when (theme?.lowercase()) {
+        "light" -> Light
+        "dark" -> Dark
+        "system" -> if (systemIsDark) Dark else Light
+        else -> Light
+    }
+}
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

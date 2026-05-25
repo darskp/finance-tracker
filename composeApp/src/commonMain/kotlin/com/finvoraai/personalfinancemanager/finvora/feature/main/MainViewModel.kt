@@ -106,4 +106,3 @@ class MainViewModel(
         }
     }
 }
-

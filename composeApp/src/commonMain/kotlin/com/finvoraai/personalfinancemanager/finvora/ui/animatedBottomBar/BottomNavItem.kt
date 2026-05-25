@@ -23,7 +23,6 @@ import androidx.compose.ui.unit.sp
 import com.finvoraai.personalfinancemanager.finvora.ui.animatedBottomBar.models.NavItem
 import com.finvoraai.personalfinancemanager.finvora.ui.animatedBottomBar.util.RenderIcon
 import com.finvoraai.personalfinancemanager.finvora.ui.animatedBottomBar.util.bounceClickable
-
 import org.jetbrains.compose.resources.stringResource
 
 @Composable

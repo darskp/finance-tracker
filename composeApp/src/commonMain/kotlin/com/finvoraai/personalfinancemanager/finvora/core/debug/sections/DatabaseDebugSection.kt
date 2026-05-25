@@ -35,8 +35,8 @@ fun DatabaseDebugSection(db: AppDatabase) {
     ) {
         Column {
             DebugStaticRow(
-                label = "ThemeSetting.isDarkMode",
-                value = themeSetting?.isDarkMode?.toString() ?: "null (no row)"
+                label = "ThemeSetting.theme",
+                value = themeSetting?.theme ?: "null (no row)"
             )
             DebugStaticRow(
                 label = "AuthSetting.hasOnboarded",

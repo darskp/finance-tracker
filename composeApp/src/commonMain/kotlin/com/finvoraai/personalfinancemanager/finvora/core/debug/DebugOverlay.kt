@@ -179,11 +179,7 @@ fun DebugOverlay() {
 // ─── Header bar ───────────────────────────────────────────────────────────────
 
 @Composable
-private fun DebugPanelHeader(
-    sections: Map<String, List<DebugEntry>>,
-    onClose: () -> Unit,
-    onClearAll: () -> Unit
-) {
+private fun DebugPanelHeader(sections: Map<String, List<DebugEntry>>, onClose: () -> Unit, onClearAll: () -> Unit) {
     val sectionCount = sections.size
     val clipboardManager = LocalClipboardManager.current
     Row(

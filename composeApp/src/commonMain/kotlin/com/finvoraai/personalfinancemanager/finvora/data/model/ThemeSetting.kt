@@ -6,5 +6,5 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "settings")
 data class ThemeSetting(
     @PrimaryKey val id: Int = 1,
-    val isDarkMode: Boolean
+    val theme: String = "System"
 )
