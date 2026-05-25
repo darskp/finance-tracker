@@ -281,7 +281,7 @@ private fun OnboardingDot(isActive: Boolean) {
             .clip(CircleShape)
             .background(
                 if (isActive) {
-                    Brush.horizontalGradient(palette.onboardingNextGradient)
+                    Brush.horizontalGradient(palette.gradients.onboardingNextGradient)
                 } else {
                     Brush.horizontalGradient(
                         listOf(

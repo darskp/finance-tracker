@@ -101,7 +101,7 @@ fun WelcomeScreen(onGetStartedClick: () -> Unit = {}, onViewDemoClick: () -> Uni
                 Row(
                     modifier = Modifier
                         .clip(CircleShape)
-                        .background(palette.primaryContainer.copy(alpha = Opacity.BADGE_BG_OPACITY))
+                        .background(palette.surfaceVariant.copy(alpha = Opacity.BADGE_BG_OPACITY))
                         .border(Spacing.hairline, palette.outline, CircleShape)
                         .padding(horizontal = Spacing.s3, vertical = Spacing.s1),
                     verticalAlignment = Alignment.CenterVertically,

@@ -79,7 +79,7 @@ fun CommonTopAppBar(
                         .clip(RoundedCornerShape(8.dp))
                         .background(
                             when (leadingImage) {
-                                is ImageVector -> palette.accent.copy(alpha = 0.2f)
+                                is ImageVector -> palette.primary.copy(alpha = 0.2f)
                                 is DrawableResource -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                                 else -> MaterialTheme.colorScheme.primaryContainer
                             }
@@ -91,7 +91,7 @@ fun CommonTopAppBar(
                             Icon(
                                 imageVector = leadingImage,
                                 contentDescription = null,
-                                tint = palette.accent,
+                                tint = palette.primary,
                                 modifier = Modifier.size(24.dp)
                             )
                         }

@@ -53,7 +53,7 @@ fun ErrorStateView(errorMessage: StringResource, onRetry: () -> Unit, modifier: 
         Button(
             onClick = onRetry,
             colors = ButtonDefaults.buttonColors(
-                containerColor = palette.surfaceMedium,
+                containerColor = palette.surfaceVariant,
                 contentColor = MaterialTheme.colorScheme.onSurface
             ),
             shape = RoundedCornerShape(Spacing.s6),

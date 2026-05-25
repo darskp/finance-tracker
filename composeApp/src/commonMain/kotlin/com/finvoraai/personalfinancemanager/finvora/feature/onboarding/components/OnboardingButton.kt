@@ -104,7 +104,7 @@ fun OnboardingButton(
                     .clip(CircleShape)
                     .background(
                         brush = Brush.horizontalGradient(
-                            colors = palette.onboardingNextGradient
+                            colors = palette.gradients.onboardingNextGradient
                         )
                     )
                     .clickable(
@@ -146,7 +146,7 @@ fun OnboardingButton(
                     .clip(CircleShape)
                     .background(
                         brush = Brush.horizontalGradient(
-                            colors = palette.onboardingExploreGradient
+                            colors = palette.gradients.onboardingExploreGradient
                         )
                     )
                     .clickable(

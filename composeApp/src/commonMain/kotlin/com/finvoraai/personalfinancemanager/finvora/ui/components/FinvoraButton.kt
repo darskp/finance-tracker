@@ -38,7 +38,7 @@ fun FinvoraButton(
 
     val containerColor = when (style) {
         ButtonStyle.PRIMARY -> palette.primary
-        ButtonStyle.SECONDARY -> palette.surfaceMedium
+        ButtonStyle.SECONDARY -> palette.surfaceVariant
         ButtonStyle.MINIMAL -> palette.primary.copy(alpha = 0.1f)
     }
 
