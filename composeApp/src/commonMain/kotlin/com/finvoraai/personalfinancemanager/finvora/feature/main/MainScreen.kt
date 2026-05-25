@@ -16,21 +16,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.finvoraai.personalfinancemanager.finvora.core.auth.AuthState
 import com.finvoraai.personalfinancemanager.finvora.core.debug.DebugBuildCheck
 import com.finvoraai.personalfinancemanager.finvora.core.debug.DebugFloatingButton
 import com.finvoraai.personalfinancemanager.finvora.core.debug.DebugLogger
 import com.finvoraai.personalfinancemanager.finvora.core.debug.DebugOverlay
-import com.finvoraai.personalfinancemanager.finvora.feature.auth.AuthViewModel
-import com.finvoraai.personalfinancemanager.finvora.feature.onboarding.OnBoardingViewModel
 import com.finvoraai.personalfinancemanager.finvora.feature.onboarding.RootNavigation
 import com.finvoraai.personalfinancemanager.finvora.feature.splash.SplashScreen
 import com.finvoraai.personalfinancemanager.finvora.ui.navigation.NavRoute
 import com.finvoraai.personalfinancemanager.finvora.ui.navigation.RootNavGraph
-import kotlinx.coroutines.delay
 import org.koin.compose.viewmodel.koinViewModel
 
-private const val SPLASH_TIMEOUT_MS = 5000L
 private const val KEY_LOCKED_DESTINATION = "lockedDestination"
 private const val KEY_INITIAL_ROUTE = "initialRoute"
 
@@ -38,51 +33,71 @@ private const val KEY_INITIAL_ROUTE = "initialRoute"
 fun MainScreen(
     navController: NavHostController,
     isColdStart: Boolean = true,
-    authViewModel: AuthViewModel = koinViewModel(),
-    onBoardingViewModel: OnBoardingViewModel = koinViewModel()
+    mainViewModel: MainViewModel = koinViewModel()
 ) {
-    val authState by authViewModel.authState.collectAsState()
-    val hasCompletedOnboarding by onBoardingViewModel.hasCompletedOnboarding.collectAsState()
+    val startupDestination by mainViewModel.startupDestination.collectAsState()
 
     var showSplashAnimation by remember { mutableStateOf(isColdStart) }
 
     var lockedDestination by remember { mutableStateOf<String?>(null) }
     var initialRoute by remember { mutableStateOf<NavRoute?>(null) }
 
-    LaunchedEffect(authState, hasCompletedOnboarding) {
-        if (lockedDestination != null) return@LaunchedEffect
-        if (authState is AuthState.Loading || hasCompletedOnboarding == null) return@LaunchedEffect
-
-        when (authState) {
-            is AuthState.LoggedIn -> {
-                lockedDestination = RootNavGraph.Main.route
-                initialRoute = NavRoute.HomeScreen
-                DebugLogger.navigation(KEY_LOCKED_DESTINATION, lockedDestination)
-                DebugLogger.navigation(KEY_INITIAL_ROUTE, initialRoute)
+    LaunchedEffect(startupDestination) {
+        DebugLogger.navigation("startupDestinationChanged", startupDestination.toString())
+        when (val destination = startupDestination) {
+            is StartupDestination.Loading -> {
+                DebugLogger.navigation("state", "Loading - Showing Splash")
             }
-            is AuthState.LoggedOut -> {
-                lockedDestination = RootNavGraph.Onboarding.route
-                if (hasCompletedOnboarding == true) {
-                    initialRoute = NavRoute.SignInScreen
+            is StartupDestination.Onboarding -> {
+                val targetRoute = destination.initialRoute
+                DebugLogger.navigation("state", "Onboarding - Target: $targetRoute")
+                if (lockedDestination == null) {
+                    // Cold start: set initial destination
+                    lockedDestination = RootNavGraph.Onboarding.route
+                    initialRoute = targetRoute
+                    DebugLogger.navigation(KEY_LOCKED_DESTINATION, lockedDestination)
+                    DebugLogger.navigation(KEY_INITIAL_ROUTE, initialRoute)
+                } else if (lockedDestination == RootNavGraph.Main.route) {
+                    // Logout transition (cold started on Main):
+                    // Navigate to Onboarding, keeping Main at the bottom of the stack
+                    DebugLogger.navigation("transition", "LOGOUT -> Navigate to Onboarding")
+                    initialRoute = targetRoute
+                    DebugLogger.navigation(KEY_INITIAL_ROUTE, initialRoute)
+                    navController.navigate(RootNavGraph.Onboarding.route) {
+                        popUpTo(RootNavGraph.Main.route) { inclusive = false }
+                    }
                 } else {
-                    initialRoute = NavRoute.WelcomeScreen
+                    // Logout transition (cold started on Onboarding):
+                    // Pop back to the Onboarding graph that is at the bottom of the stack
+                    DebugLogger.navigation("transition", "LOGOUT -> Pop back to Onboarding")
+                    initialRoute = targetRoute
+                    DebugLogger.navigation(KEY_INITIAL_ROUTE, initialRoute)
+                    navController.popBackStack(RootNavGraph.Onboarding.route, inclusive = false)
                 }
-                DebugLogger.navigation(KEY_LOCKED_DESTINATION, lockedDestination)
-                DebugLogger.navigation(KEY_INITIAL_ROUTE, initialRoute)
             }
-            else -> {}
-        }
-    }
-
-    // Safety timeout: if Clerk never restores session, fall through to onboarding
-    LaunchedEffect(Unit) {
-        if (isColdStart) {
-            delay(SPLASH_TIMEOUT_MS)
-            if (lockedDestination == null) {
-                lockedDestination = RootNavGraph.Onboarding.route
-                initialRoute = NavRoute.WelcomeScreen
-                DebugLogger.navigation(KEY_LOCKED_DESTINATION, "TIMEOUT -> $lockedDestination")
-                DebugLogger.navigation(KEY_INITIAL_ROUTE, "TIMEOUT -> $initialRoute")
+            is StartupDestination.Main -> {
+                DebugLogger.navigation("state", "Main - Authenticated Graph")
+                if (lockedDestination == null) {
+                    // Cold start: set initial destination
+                    lockedDestination = RootNavGraph.Main.route
+                    initialRoute = NavRoute.HomeScreen
+                    DebugLogger.navigation(KEY_LOCKED_DESTINATION, lockedDestination)
+                    DebugLogger.navigation(KEY_INITIAL_ROUTE, initialRoute)
+                } else if (lockedDestination == RootNavGraph.Onboarding.route) {
+                    // Login transition (cold started on Onboarding):
+                    // Navigate to Main, keeping Onboarding at the bottom of the stack
+                    DebugLogger.navigation("transition", "LOGIN -> Navigate to Main")
+                    initialRoute = NavRoute.HomeScreen
+                    navController.navigate(RootNavGraph.Main.route) {
+                        popUpTo(RootNavGraph.Onboarding.route) { inclusive = false }
+                    }
+                } else {
+                    // Login transition (cold started on Main):
+                    // Pop back to the Main graph that is at the bottom of the stack
+                    DebugLogger.navigation("transition", "LOGIN -> Pop back to Main")
+                    initialRoute = NavRoute.HomeScreen
+                    navController.popBackStack(RootNavGraph.Main.route, inclusive = false)
+                }
             }
         }
     }
@@ -117,3 +132,4 @@ fun MainScreen(
         }
     }
 }
+

@@ -80,6 +80,11 @@
     <!-- Shared Components -->
     <string name="no_results_found">No results found</string>
 
+    <!-- Debug Overlay (dev-only, never shown in release) -->
+    <string name="debug_copy_all">Copy All</string>
+    <string name="debug_clear_all">Clear All</string>
+    <string name="cd_debug_close">Close debug overlay</string>
+
     <!-- Content Descriptions -->
     <string name="cd_back">Back</string>
     <string name="cd_logo">Logo</string>

@@ -38,6 +38,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -49,8 +51,12 @@ import com.finvoraai.personalfinancemanager.finvora.core.debug.sections.Navigati
 import com.finvoraai.personalfinancemanager.finvora.core.debug.sections.OnboardingDebugSection
 import com.finvoraai.personalfinancemanager.finvora.data.local.AppDatabase
 import finvoraai.composeapp.generated.resources.Res
+import finvoraai.composeapp.generated.resources.cd_debug_close
+import finvoraai.composeapp.generated.resources.debug_clear_all
+import finvoraai.composeapp.generated.resources.debug_copy_all
 import finvoraai.composeapp.generated.resources.ic_close
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
@@ -131,7 +137,7 @@ fun DebugOverlay() {
                     .background(BgPanel)
             ) {
                 DebugPanelHeader(
-                    sectionCount = sections.size,
+                    sections = sections,
                     onClose = { DebugController.hide() },
                     onClearAll = { DebugStateManager.clearAll() }
                 )
@@ -173,7 +179,13 @@ fun DebugOverlay() {
 // ─── Header bar ───────────────────────────────────────────────────────────────
 
 @Composable
-private fun DebugPanelHeader(sectionCount: Int, onClose: () -> Unit, onClearAll: () -> Unit) {
+private fun DebugPanelHeader(
+    sections: Map<String, List<DebugEntry>>,
+    onClose: () -> Unit,
+    onClearAll: () -> Unit
+) {
+    val sectionCount = sections.size
+    val clipboardManager = LocalClipboardManager.current
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -196,13 +208,30 @@ private fun DebugPanelHeader(sectionCount: Int, onClose: () -> Unit, onClearAll:
                 fontSize = 10.sp
             )
         }
+        TextButton(
+            onClick = {
+                val formattedText = buildString {
+                    appendLine("=== FINVORA DEBUG REPORT ===")
+                    sections.forEach { (sectionName, entries) ->
+                        appendLine("\n--- $sectionName ---")
+                        entries.asReversed().forEach { entry ->
+                            appendLine("[${entry.timeLabel}] ${entry.tag} = ${entry.value}")
+                        }
+                    }
+                }
+                clipboardManager.setText(AnnotatedString(formattedText))
+            }
+        ) {
+            Text(stringResource(Res.string.debug_copy_all), color = AccentGreen, fontSize = 11.sp)
+        }
+        Spacer(Modifier.width(4.dp))
         TextButton(onClick = onClearAll) {
-            Text("Clear All", color = TextMuted, fontSize = 11.sp)
+            Text(stringResource(Res.string.debug_clear_all), color = TextMuted, fontSize = 11.sp)
         }
         IconButton(onClick = onClose) {
             Icon(
                 painter = painterResource(Res.drawable.ic_close),
-                contentDescription = "Close debug overlay",
+                contentDescription = stringResource(Res.string.cd_debug_close),
                 tint = TextMuted
             )
         }
