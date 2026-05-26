@@ -38,6 +38,12 @@
     <string name="onboarding_page2_subtitle">Get AI-powered insights, spending analysis, smart budgeting suggestions, and personalized financial guidance.</string>
     <string name="onboarding_page3_title">Simple, Secure &amp;\nAlways Organized</string>
     <string name="onboarding_page3_subtitle">Manage daily finances, track bills, and stay in control with a secure and beautifully designed finance experience.</string>
+    <string name="onboarding_label_image_landscape">onboarding_image_landscape</string>
+    <string name="onboarding_label_text_landscape">onboarding_text_landscape</string>
+    <string name="onboarding_label_image_portrait">onboarding_image_portrait</string>
+    <string name="onboarding_label_text_portrait">onboarding_text_portrait</string>
+    <string name="onboarding_label_dot_width">dot_width</string>
+    <string name="onboarding_label_dot_alpha">dot_alpha</string>
     <string name="onboarding_btn_explore">Explore FinvoraAI ✦</string>
     <string name="onboarding_btn_prev">Previous</string>
     <string name="onboarding_btn_next">Next</string>

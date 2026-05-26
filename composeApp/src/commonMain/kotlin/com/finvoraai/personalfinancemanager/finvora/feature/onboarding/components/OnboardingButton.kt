@@ -73,10 +73,10 @@ fun OnboardingButton(
                     .clip(CircleShape)
                     .border(
                         width = Spacing.borderMedium,
-                        color = androidx.compose.ui.graphics.Color.White.copy(alpha = Opacity.TRANSPARENT_BORDER),
+                        color = palette.outline.copy(alpha = Opacity.TRANSPARENT_BORDER),
                         shape = CircleShape
                     )
-                    .background(androidx.compose.ui.graphics.Color.White.copy(alpha = Opacity.TRANSPARENT_BG))
+                    .background(palette.surfaceVariant.copy(alpha = Opacity.TRANSPARENT_BG))
                     .clickable(
                         interactionSource = interactionSource,
                         indication = null,
@@ -88,7 +88,7 @@ fun OnboardingButton(
                 Icon(
                     painter = painterResource(Res.drawable.ic_arrow_back),
                     contentDescription = stringResource(Res.string.onboarding_btn_prev),
-                    tint = androidx.compose.ui.graphics.Color.White.copy(
+                    tint = palette.textPrimary.copy(
                         alpha = if (enabled) Opacity.ICON_ENABLED else Opacity.ICON_DISABLED
                     ),
                     modifier = Modifier.size(Spacing.s5)

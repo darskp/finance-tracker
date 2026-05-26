@@ -49,7 +49,7 @@ object Dark : BaseThemePalette {
     override val statusBarColor = StaticColors.Transparent
     override val navBarColor = StaticColors.Transparent
 
-   // --- Complex Tokens ---
+    // --- Complex Tokens ---
     override val gradients = AppGradients(
         screenBackground = Brush.verticalGradient(
             colors = listOf(

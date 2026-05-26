@@ -15,9 +15,11 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -41,15 +43,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextAlign
 import com.finvoraai.personalfinancemanager.finvora.feature.onboarding.components.OnboardingButton
 import com.finvoraai.personalfinancemanager.finvora.feature.onboarding.components.OnboardingButtonType
+import com.finvoraai.personalfinancemanager.finvora.ui.components.AppBackgroundScreen
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.BodyNormal
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.H1TextStyle
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.LocalAppPalette
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.Spacing
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.tokens.Motion
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.tokens.Opacity
-import com.finvoraai.personalfinancemanager.finvora.ui.theme.tokens.StaticColors
 import finvoraai.composeapp.generated.resources.*
 import finvoraai.composeapp.generated.resources.Res
 import kotlinx.coroutines.launch
@@ -58,6 +61,10 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+
+private const val WEIGHT_LANDSCAPE_IMAGE = 1.1f
+private const val WEIGHT_LANDSCAPE_CONTENT = 0.9f
+private const val WEIGHT_PORTRAIT_IMAGE = 1.2f
 
 data class OnboardingPage(
     val image: DrawableResource,
@@ -94,157 +101,277 @@ fun OnboardingScreen(
     var isForward by remember { mutableStateOf(true) }
     val totalPages = onboardingPages.size
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        AnimatedContent(
-            targetState = currentPage,
-            transitionSpec = {
-                val direction = if (isForward) 1 else -1
-                (
-                    slideInHorizontally(
-                        initialOffsetX = { it * direction },
-                        animationSpec = tween(Motion.DURATION_STANDARD, easing = Motion.StandardEasing)
-                    ) + fadeIn(tween(Motion.DURATION_STANDARD))
-                    ) togetherWith
-                    (
-                        slideOutHorizontally(
-                            targetOffsetX = { -it * direction },
-                            animationSpec = tween(Motion.DURATION_STANDARD, easing = Motion.StandardEasing)
-                        ) + fadeOut(tween(Motion.DURATION_FADE))
-                        )
-            },
-            label = "onboarding_image"
-        ) { page ->
-            Image(
-                painter = painterResource(onboardingPages[page].image),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-            )
-        }
-
-        Box(
+    AppBackgroundScreen {
+        BoxWithConstraints(
             modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colorStops = arrayOf(
-                            0.0f to StaticColors.Transparent,
-                            Opacity.GRADIENT_STOP_START to StaticColors.Black.copy(alpha = Opacity.SCRIM_LIGHT),
-                            Opacity.GRADIENT_STOP_END to StaticColors.Black.copy(alpha = Opacity.SCRIM_MEDIUM),
-                            1.0f to StaticColors.Black.copy(alpha = Opacity.SCRIM_DARK)
-                        )
-                    )
-                )
-        )
-
-        Column(
-            modifier = Modifier
-                .widthIn(max = Spacing.authMaxWidth)
                 .fillMaxSize()
                 .statusBarsPadding()
-                .navigationBarsPadding()
-                .padding(horizontal = Spacing.s7)
-                .align(Alignment.Center),
-            verticalArrangement = Arrangement.SpaceBetween
+                .navigationBarsPadding(),
+            contentAlignment = Alignment.Center
         ) {
-            Spacer(modifier = Modifier.weight(1f))
+            val isLandscape = maxWidth > maxHeight
 
-            AnimatedContent(
-                targetState = currentPage,
-                transitionSpec = {
-                    val direction = if (isForward) 1 else -1
-                    (
-                        slideInHorizontally(
-                            initialOffsetX = { (it * 0.3 * direction).toInt() },
-                            animationSpec = tween(Motion.DURATION_STANDARD, easing = Motion.StandardEasing)
-                        ) + fadeIn(tween(Motion.DURATION_STANDARD))
-                        ) togetherWith
-                        (
-                            slideOutHorizontally(
-                                targetOffsetX = { (-it * 0.3 * direction).toInt() },
-                                animationSpec = tween(Motion.DURATION_STANDARD, easing = Motion.StandardEasing)
-                            ) + fadeOut(tween(Motion.DURATION_FADE))
-                            )
-                },
-                label = "onboarding_text"
-            ) { page ->
-                Column {
-                    Text(
-                        text = stringResource(onboardingPages[page].title),
-                        color = palette.textPrimary,
-                        style = H1TextStyle()
-                    )
-                    Spacer(modifier = Modifier.height(Spacing.s3))
-                    Text(
-                        text = stringResource(onboardingPages[page].subtitle),
-                        color = palette.textSecondary,
-                        style = BodyNormal()
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(Spacing.s8))
-
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                repeat(totalPages) { index ->
-                    OnboardingDot(isActive = index == currentPage)
-                    if (index < totalPages - 1) Spacer(modifier = Modifier.width(Spacing.s2))
-                }
-            }
-
-            Spacer(modifier = Modifier.height(Spacing.s7))
-
-            if (currentPage < totalPages - 1) {
+            if (isLandscape) {
+                // Landscape layout: Row
                 Row(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = Spacing.s3),
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                        .fillMaxSize()
+                        .padding(horizontal = Spacing.s6, vertical = Spacing.s4),
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.s6),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    OnboardingButton(
-                        type = OnboardingButtonType.PREV,
-                        enabled = currentPage > 0,
-                        onClick = {
-                            if (currentPage > 0) {
-                                isForward = false
-                                currentPage--
+                    // Left: Mockup Image
+                    Box(
+                        modifier = Modifier
+                            .weight(WEIGHT_LANDSCAPE_IMAGE)
+                            .fillMaxHeight(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        AnimatedContent(
+                            targetState = currentPage,
+                            transitionSpec = {
+                                val direction = if (isForward) 1 else -1
+                                (
+                                    slideInHorizontally(
+                                        initialOffsetX = { it * direction },
+                                        animationSpec = tween(
+                                            Motion.DURATION_STANDARD,
+                                            easing = Motion.StandardEasing
+                                        )
+                                    ) + fadeIn(tween(Motion.DURATION_STANDARD))
+                                    ) togetherWith
+                                    (
+                                        slideOutHorizontally(
+                                            targetOffsetX = { -it * direction },
+                                            animationSpec = tween(
+                                                Motion.DURATION_STANDARD,
+                                                easing = Motion.StandardEasing
+                                            )
+                                        ) + fadeOut(tween(Motion.DURATION_FADE))
+                                        )
+                            },
+                            label = stringResource(Res.string.onboarding_label_image_landscape)
+                        ) { page ->
+                            Image(
+                                painter = painterResource(onboardingPages[page].image),
+                                contentDescription = null,
+                                contentScale = ContentScale.Fit,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                    }
+
+                    // Right: Text, indicators, and buttons
+                    Column(
+                        modifier = Modifier
+                            .weight(WEIGHT_LANDSCAPE_CONTENT)
+                            .fillMaxHeight(),
+                        verticalArrangement = Arrangement.SpaceBetween,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Spacer(modifier = Modifier.height(Spacing.s2))
+
+                        AnimatedContent(
+                            targetState = currentPage,
+                            transitionSpec = {
+                                val direction = if (isForward) 1 else -1
+                                (
+                                    slideInHorizontally(
+                                        initialOffsetX = { (it * 0.3 * direction).toInt() },
+                                        animationSpec = tween(
+                                            Motion.DURATION_STANDARD,
+                                            easing = Motion.StandardEasing
+                                        )
+                                    ) + fadeIn(tween(Motion.DURATION_STANDARD))
+                                    ) togetherWith
+                                    (
+                                        slideOutHorizontally(
+                                            targetOffsetX = { (-it * 0.3 * direction).toInt() },
+                                            animationSpec = tween(
+                                                Motion.DURATION_STANDARD,
+                                                easing = Motion.StandardEasing
+                                            )
+                                        ) + fadeOut(tween(Motion.DURATION_FADE))
+                                        )
+                            },
+                            label = stringResource(Res.string.onboarding_label_text_landscape)
+                        ) { page ->
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    text = stringResource(onboardingPages[page].title),
+                                    color = palette.textPrimary,
+                                    style = H1TextStyle(),
+                                    textAlign = TextAlign.Center
+                                )
+                                Spacer(modifier = Modifier.height(Spacing.s3))
+                                Text(
+                                    text = stringResource(onboardingPages[page].subtitle),
+                                    color = palette.textSecondary,
+                                    style = BodyNormal(),
+                                    textAlign = TextAlign.Center
+                                )
                             }
                         }
-                    )
 
-                    OnboardingButton(
-                        type = OnboardingButtonType.NEXT,
-                        onClick = {
-                            isForward = true
-                            currentPage++
+                        Spacer(modifier = Modifier.height(Spacing.s4))
+
+                        Row(
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            repeat(totalPages) { index ->
+                                OnboardingDot(isActive = index == currentPage)
+                                if (index < totalPages - 1) Spacer(modifier = Modifier.width(Spacing.s2))
+                            }
                         }
-                    )
+
+                        Spacer(modifier = Modifier.height(Spacing.s4))
+
+                        OnboardingNavigationButtons(
+                            currentPage = currentPage,
+                            totalPages = totalPages,
+                            onPrevClick = {
+                                isForward = false
+                                currentPage--
+                            },
+                            onNextClick = {
+                                isForward = true
+                                currentPage++
+                            },
+                            onExploreClick = {
+                                scope.launch {
+                                    onBoardingViewModel.setOnboardingCompleted(true)
+                                    onOnboardingComplete()
+                                }
+                            }
+                        )
+                    }
                 }
             } else {
-                Row(
+                // Portrait layout (Phone & Tablet): Column
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = Spacing.s3),
-                    horizontalArrangement = Arrangement.spacedBy(Spacing.s4),
-                    verticalAlignment = Alignment.CenterVertically
+                        .widthIn(max = Spacing.authMaxWidth)
+                        .fillMaxSize()
+                        .padding(horizontal = Spacing.s6),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.SpaceBetween
                 ) {
-                    OnboardingButton(
-                        type = OnboardingButtonType.PREV,
-                        enabled = true,
-                        onClick = {
+                    Spacer(modifier = Modifier.height(Spacing.s4))
+
+                    // Mockup Image
+                    Box(
+                        modifier = Modifier
+                            .weight(WEIGHT_PORTRAIT_IMAGE)
+                            .fillMaxWidth()
+                            .padding(vertical = Spacing.s4),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        AnimatedContent(
+                            targetState = currentPage,
+                            transitionSpec = {
+                                val direction = if (isForward) 1 else -1
+                                (
+                                    slideInHorizontally(
+                                        initialOffsetX = { it * direction },
+                                        animationSpec = tween(
+                                            Motion.DURATION_STANDARD,
+                                            easing = Motion.StandardEasing
+                                        )
+                                    ) + fadeIn(tween(Motion.DURATION_STANDARD))
+                                    ) togetherWith
+                                    (
+                                        slideOutHorizontally(
+                                            targetOffsetX = { -it * direction },
+                                            animationSpec = tween(
+                                                Motion.DURATION_STANDARD,
+                                                easing = Motion.StandardEasing
+                                            )
+                                        ) + fadeOut(tween(Motion.DURATION_FADE))
+                                        )
+                            },
+                            label = stringResource(Res.string.onboarding_label_image_portrait)
+                        ) { page ->
+                            Image(
+                                painter = painterResource(onboardingPages[page].image),
+                                contentDescription = null,
+                                contentScale = ContentScale.Fit,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(Spacing.s4))
+
+                    // Text section
+                    AnimatedContent(
+                        targetState = currentPage,
+                        transitionSpec = {
+                            val direction = if (isForward) 1 else -1
+                            (
+                                slideInHorizontally(
+                                    initialOffsetX = { (it * 0.3 * direction).toInt() },
+                                    animationSpec = tween(Motion.DURATION_STANDARD, easing = Motion.StandardEasing)
+                                ) + fadeIn(tween(Motion.DURATION_STANDARD))
+                                ) togetherWith
+                                (
+                                    slideOutHorizontally(
+                                        targetOffsetX = { (-it * 0.3 * direction).toInt() },
+                                        animationSpec = tween(Motion.DURATION_STANDARD, easing = Motion.StandardEasing)
+                                    ) + fadeOut(tween(Motion.DURATION_FADE))
+                                    )
+                        },
+                        label = stringResource(Res.string.onboarding_label_text_portrait)
+                    ) { page ->
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = stringResource(onboardingPages[page].title),
+                                color = palette.textPrimary,
+                                style = H1TextStyle(),
+                                textAlign = TextAlign.Center
+                            )
+                            Spacer(modifier = Modifier.height(Spacing.s3))
+                            Text(
+                                text = stringResource(onboardingPages[page].subtitle),
+                                color = palette.textSecondary,
+                                style = BodyNormal(),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(Spacing.s8))
+
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        repeat(totalPages) { index ->
+                            OnboardingDot(isActive = index == currentPage)
+                            if (index < totalPages - 1) Spacer(modifier = Modifier.width(Spacing.s2))
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(Spacing.s7))
+
+                    OnboardingNavigationButtons(
+                        currentPage = currentPage,
+                        totalPages = totalPages,
+                        onPrevClick = {
                             isForward = false
                             currentPage--
-                        }
-                    )
-
-                    OnboardingButton(
-                        type = OnboardingButtonType.EXPLORE,
-                        modifier = Modifier.weight(1f),
-                        onClick = {
+                        },
+                        onNextClick = {
+                            isForward = true
+                            currentPage++
+                        },
+                        onExploreClick = {
                             scope.launch {
                                 onBoardingViewModel.setOnboardingCompleted(true)
                                 onOnboardingComplete()
@@ -252,6 +379,75 @@ fun OnboardingScreen(
                         }
                     )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun OnboardingNavigationButtons(
+    currentPage: Int,
+    totalPages: Int,
+    onPrevClick: () -> Unit,
+    onNextClick: () -> Unit,
+    onExploreClick: () -> Unit
+) {
+    when {
+        // First page: hide PREV, right-align NEXT
+        currentPage == 0 -> {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = Spacing.s4),
+                contentAlignment = Alignment.CenterEnd
+            ) {
+                OnboardingButton(
+                    type = OnboardingButtonType.NEXT,
+                    onClick = onNextClick
+                )
+            }
+        }
+        // Last page: show PREV + EXPLORE
+        currentPage == totalPages - 1 -> {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = Spacing.s4),
+                horizontalArrangement = Arrangement.spacedBy(Spacing.s4),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OnboardingButton(
+                    type = OnboardingButtonType.PREV,
+                    enabled = true,
+                    onClick = onPrevClick
+                )
+
+                OnboardingButton(
+                    type = OnboardingButtonType.EXPLORE,
+                    modifier = Modifier.weight(1f),
+                    onClick = onExploreClick
+                )
+            }
+        }
+        // Middle pages: show both PREV + NEXT
+        else -> {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = Spacing.s4),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OnboardingButton(
+                    type = OnboardingButtonType.PREV,
+                    enabled = true,
+                    onClick = onPrevClick
+                )
+
+                OnboardingButton(
+                    type = OnboardingButtonType.NEXT,
+                    onClick = onNextClick
+                )
             }
         }
     }
@@ -266,12 +462,12 @@ private fun OnboardingDot(isActive: Boolean) {
             dampingRatio = Spring.DampingRatioMediumBouncy,
             stiffness = Spring.StiffnessMedium
         ),
-        label = "dot_width"
+        label = stringResource(Res.string.onboarding_label_dot_width)
     )
     val alpha by animateFloatAsState(
         targetValue = if (isActive) Opacity.FULL else Opacity.DISABLED,
         animationSpec = tween(Motion.DURATION_STANDARD, easing = Motion.StandardEasing),
-        label = "dot_alpha"
+        label = stringResource(Res.string.onboarding_label_dot_alpha)
     )
 
     Box(
@@ -285,8 +481,8 @@ private fun OnboardingDot(isActive: Boolean) {
                 } else {
                     Brush.horizontalGradient(
                         listOf(
-                            StaticColors.White.copy(alpha = alpha),
-                            StaticColors.White.copy(alpha = alpha)
+                            palette.outline.copy(alpha = alpha),
+                            palette.outline.copy(alpha = alpha)
                         )
                     )
                 }
