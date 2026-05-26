@@ -32,7 +32,7 @@ fun AppBackgroundScreen(
     BoxWithConstraints(
         modifier = modifier
             .fillMaxSize()
-            .background(palette.background)
+            .background(palette.gradients.screenBackground)
     ) {
         DecorativeBlur(
             color = palette.primary,

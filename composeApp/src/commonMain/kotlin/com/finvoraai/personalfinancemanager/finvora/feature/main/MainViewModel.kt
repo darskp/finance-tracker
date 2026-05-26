@@ -78,7 +78,7 @@ class MainViewModel(
                 StartupDestination.Main
             } else {
                 val targetRoute = if (completedOnboarding) {
-                    NavRoute.SignInScreen
+                    NavRoute.SignUpScreen
                 } else {
                     NavRoute.WelcomeScreen
                 }

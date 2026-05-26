@@ -386,19 +386,26 @@ private fun SignInFormSection(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(Spacing.s4)
     ) {
+        val googleIcon = if (palette.isDark) Res.drawable.ic_google_dark else Res.drawable.ic_google
+        val appleIcon = if (palette.isDark) Res.drawable.ic_apple_dark else Res.drawable.ic_apple_light
+
         FinvoraButton(
             text = stringResource(Res.string.auth_google),
             onClick = onGoogleSignIn,
             style = ButtonStyle.SECONDARY,
             modifier = Modifier.weight(1f),
-            enabled = !isLoading
+            enabled = !isLoading,
+            leadingIcon = painterResource(googleIcon),
+            tintIcon = false
         )
         FinvoraButton(
             text = stringResource(Res.string.auth_apple),
             onClick = onAppleSignIn,
             style = ButtonStyle.SECONDARY,
             modifier = Modifier.weight(1f),
-            enabled = !isLoading
+            enabled = !isLoading,
+            leadingIcon = painterResource(appleIcon),
+            tintIcon = false
         )
     }
 
