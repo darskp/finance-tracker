@@ -1,12 +1,10 @@
 package com.finvoraai.personalfinancemanager.finvora.feature.main
 
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.finvoraai.personalfinancemanager.finvora.core.auth.AuthState
 import com.finvoraai.personalfinancemanager.finvora.core.debug.DebugLogger
+import com.finvoraai.personalfinancemanager.finvora.data.local.SettingsDao
 import com.finvoraai.personalfinancemanager.finvora.feature.auth.AuthManager
 import com.finvoraai.personalfinancemanager.finvora.ui.animatedBottomBar.models.IconSource
 import com.finvoraai.personalfinancemanager.finvora.ui.animatedBottomBar.models.NavItem
@@ -33,10 +31,8 @@ sealed interface StartupDestination {
 
 class MainViewModel(
     private val authManager: AuthManager,
-    private val prefs: DataStore<Preferences>
+    private val settingsDao: SettingsDao
 ) : ViewModel() {
-
-    private val hasCompletedOnboardingKey = booleanPreferencesKey(HAS_COMPLETED_ONBOARDING_PREF_KEY)
 
     val bottomNavItems = listOf(
         NavItem(
@@ -52,7 +48,7 @@ class MainViewModel(
     )
 
     // Flow representing onboarding completion state
-    val hasCompletedOnboarding = prefs.data.map { it[hasCompletedOnboardingKey] ?: false }
+    val hasCompletedOnboarding = settingsDao.getAuthSetting().map { it?.hasCompletedOnboarding ?: false }
 
     // Combine Auth State and Onboarding State into a resolved startup state
     val startupDestination: StateFlow<StartupDestination> = combine(
