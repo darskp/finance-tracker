@@ -23,7 +23,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import com.finvoraai.personalfinancemanager.finvora.ui.animatedBottomBar.models.IconSource
 import com.finvoraai.personalfinancemanager.finvora.ui.animatedBottomBar.models.NavItem
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.BodyNormal
@@ -38,7 +37,7 @@ fun SimpleBottomNavigation(
     selectedIndex: Int,
     items: List<NavItem>,
     onItemSelected: (Int) -> Unit,
-    height: Dp = 70.dp
+    height: Dp = Spacing.s18
 ) {
     val palette = LocalAppPalette.current
 

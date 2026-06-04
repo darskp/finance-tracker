@@ -1,11 +1,7 @@
 package com.finvoraai.personalfinancemanager.finvora.feature.home
 
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -23,6 +19,7 @@ import com.finvoraai.personalfinancemanager.finvora.feature.auth.AuthViewModel
 import com.finvoraai.personalfinancemanager.finvora.feature.home.components.HomePageContent
 import com.finvoraai.personalfinancemanager.finvora.ui.components.AppBackgroundScreen
 import com.finvoraai.personalfinancemanager.finvora.ui.components.HomeTopAppBar
+import com.finvoraai.personalfinancemanager.finvora.ui.theme.LocalAppPalette
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.tokens.Motion
 import com.finvoraai.personalfinancemanager.finvora.ui.utils.collectAsStateLifecycleAware
 import org.koin.compose.viewmodel.koinViewModel
@@ -36,6 +33,7 @@ fun HomeScreen(
 ) {
     val listState = rememberLazyListState()
     val uiState by viewModel.uiState.collectAsStateLifecycleAware()
+    val palette = LocalAppPalette.current
 
     LaunchedEffect(Unit) {
         authViewModel.events.collect { event ->
@@ -52,6 +50,15 @@ fun HomeScreen(
         }
     }
 
+    val appBarColor by animateColorAsState(
+        targetValue = if (isScrolled) {
+            palette.surface
+        } else {
+            palette.surface.copy(alpha = 0f)
+        },
+        animationSpec = tween(Motion.APP_BAR_ANIMATION_DURATION)
+    )
+
     Scaffold { padding ->
         AppBackgroundScreen {
             Box(modifier = Modifier.fillMaxSize()) {
@@ -63,24 +70,11 @@ fun HomeScreen(
                     authViewModel = authViewModel
                 )
 
-                AnimatedVisibility(
-                    visible = isScrolled,
-                    enter = slideInVertically(
-                        animationSpec = tween(Motion.APP_BAR_ANIMATION_DURATION)
-                    ) { -it } + fadeIn(
-                        animationSpec = tween(Motion.APP_BAR_ANIMATION_DURATION)
-                    ),
-                    exit = slideOutVertically(
-                        animationSpec = tween(Motion.APP_BAR_ANIMATION_DURATION)
-                    ) { -it } + fadeOut(
-                        animationSpec = tween(Motion.APP_BAR_ANIMATION_DURATION)
-                    ),
+                HomeTopAppBar(
+                    navController = navController,
+                    backgroundColor = appBarColor,
                     modifier = Modifier.align(Alignment.TopCenter)
-                ) {
-                    HomeTopAppBar(
-                        navController = navController
-                    )
-                }
+                )
             }
         }
     }

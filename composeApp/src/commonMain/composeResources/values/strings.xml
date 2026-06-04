@@ -20,6 +20,34 @@
 
     <!-- Home Screen -->
     <string name="home_dashboard_placeholder">Dashboard screen</string>
+    <string name="dashboard_title">Dashboard</string>
+    <string name="dashboard_total_balance">Total Balance</string>
+    <string name="dashboard_balance_value">$124,592.00</string>
+    <string name="dashboard_income_label">Income</string>
+    <string name="dashboard_income_value">+$12,450</string>
+    <string name="dashboard_expenses_label">Expenses</string>
+    <string name="dashboard_expenses_value">-$4,210</string>
+    <string name="dashboard_wealth_insights">Wealth Insights</string>
+    <string name="dashboard_view_analysis">View Analysis</string>
+    <string name="dashboard_ai_growth_title">AI Growth Forecast</string>
+    <string name="dashboard_ai_growth_desc">Your portfolio is projected to grow by 12.4% over the next quarter based on current spending trends.</string>
+    <string name="dashboard_savings_title">Savings Target Achieved</string>
+    <string name="dashboard_savings_desc">Congratulations! You have met 85% of your savings target for this month.</string>
+    <string name="dashboard_recent_transactions">Recent Transactions</string>
+    <string name="dashboard_see_all">See All</string>
+    <string name="dashboard_tx_apple_title">Apple Store</string>
+    <string name="dashboard_tx_apple_sub">Electronics • Today</string>
+    <string name="dashboard_tx_apple_value">-$1,299.00</string>
+    <string name="dashboard_tx_salary_title">Salary Deposit</string>
+    <string name="dashboard_tx_salary_sub">Income • Yesterday</string>
+    <string name="dashboard_tx_salary_value">+$8,500.00</string>
+    <string name="dashboard_tx_bistro_title">The Green Bistro</string>
+    <string name="dashboard_tx_bistro_sub">Dining • 2 days ago</string>
+    <string name="dashboard_tx_bistro_value">-$84.50</string>
+    <string name="dashboard_tx_shell_title">Shell Station</string>
+    <string name="dashboard_tx_shell_sub">Transport • 3 days ago</string>
+    <string name="dashboard_tx_shell_value">-$65.00</string>
+    <string name="cd_avatar">User profile picture</string>
 
     <!-- Welcome Screen -->
     <string name="welcome_version_badge">VERSION 2.0 NOW LIVE</string>

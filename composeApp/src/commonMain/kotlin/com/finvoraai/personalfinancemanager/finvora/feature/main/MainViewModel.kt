@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
+@Suppress("UnusedPrivateProperty")
 private const val HAS_COMPLETED_ONBOARDING_PREF_KEY = "has_completed_onboarding"
 private const val KEY_STARTUP_DESTINATION = "startupDestination"
 

@@ -6,6 +6,7 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Surface // import material 3 not material
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -20,13 +21,15 @@ import com.finvoraai.personalfinancemanager.finvora.feature.chat.ChatScreen
 import com.finvoraai.personalfinancemanager.finvora.feature.home.HomeScreen
 import com.finvoraai.personalfinancemanager.finvora.feature.main.MainViewModel
 import com.finvoraai.personalfinancemanager.finvora.ui.components.SimpleBottomNavigation
+import com.finvoraai.personalfinancemanager.finvora.ui.theme.Spacing
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun MainNavigation(navController: NavHostController, onNavigateToAuth: () -> Unit = {}) {
-    // Inject MainViewModel using Koin
-    val viewModel: MainViewModel = koinViewModel()
-
+fun MainNavigation(
+    navController: NavHostController,
+    onNavigateToAuth: () -> Unit = {},
+    viewModel: MainViewModel = koinViewModel()
+) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
@@ -50,7 +53,15 @@ fun MainNavigation(navController: NavHostController, onNavigateToAuth: () -> Uni
             NavHost(
                 navController = navController,
                 startDestination = NavRoute.HomeScreen,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier
+                    .fillMaxSize()
+                    .then(
+                        if (shouldShowBottomBar) {
+                            Modifier.padding(bottom = Spacing.s18)
+                        } else {
+                            Modifier
+                        }
+                    )
             ) {
                 composable<NavRoute.HomeScreen> {
                     HomeScreen(

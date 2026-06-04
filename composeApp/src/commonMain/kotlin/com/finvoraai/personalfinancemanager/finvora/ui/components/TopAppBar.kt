@@ -1,7 +1,11 @@
 package com.finvoraai.personalfinancemanager.finvora.ui.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -14,18 +18,19 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil3.compose.SubcomposeAsyncImage
 import coil3.compose.SubcomposeAsyncImageContent
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.*
 import com.finvoraai.personalfinancemanager.finvora.ui.uiutils.HSpacer
 import finvoraai.composeapp.generated.resources.Res
-import finvoraai.composeapp.generated.resources.app_title
+import finvoraai.composeapp.generated.resources.cd_avatar
 import finvoraai.composeapp.generated.resources.cd_back
 import finvoraai.composeapp.generated.resources.cd_logo
+import finvoraai.composeapp.generated.resources.dashboard_title
 import finvoraai.composeapp.generated.resources.finvoraai_logo_no_text
 import finvoraai.composeapp.generated.resources.ic_arrow_back
+import finvoraai.composeapp.generated.resources.ic_avatar_placeholder
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -181,36 +186,73 @@ fun CommonTopAppBar(
  */
 @Suppress("UnusedParameter")
 @Composable
-fun HomeTopAppBar(navController: NavController) {
+fun HomeTopAppBar(
+    navController: NavController,
+    title: String = stringResource(Res.string.dashboard_title),
+    logoRes: DrawableResource? = Res.drawable.finvoraai_logo_no_text,
+    avatarRes: DrawableResource? = Res.drawable.ic_avatar_placeholder,
+    onAvatarClick: (() -> Unit)? = null,
+    applySystemBarsPadding: Boolean = true,
+    backgroundColor: Color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+    modifier: Modifier = Modifier
+) {
+    val palette = LocalAppPalette.current
     Surface(
-        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
-        modifier = Modifier.fillMaxWidth()
+        color = backgroundColor,
+        modifier = modifier.fillMaxWidth()
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .systemBarsPadding()
-                .height(56.dp)
+                .then(if (applySystemBarsPadding) Modifier.systemBarsPadding() else Modifier)
+                .height(Spacing.s12)
                 .padding(horizontal = Spacing.s4),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            // App Identity
+            // App Identity (Logo + Title)
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    painter = painterResource(Res.drawable.finvoraai_logo_no_text),
-                    contentDescription = stringResource(Res.string.cd_logo),
-                    modifier = Modifier.size(32.dp),
-                    tint = Color.Unspecified
-                )
-                HSpacer(Spacing.s2)
+                if (logoRes != null) {
+                    Icon(
+                        painter = painterResource(logoRes),
+                        contentDescription = stringResource(Res.string.cd_logo),
+                        modifier = Modifier.size(Spacing.s6),
+                        tint = Color.Unspecified
+                    )
+                    HSpacer(Spacing.s2)
+                }
                 Text(
-                    text = stringResource(Res.string.app_title),
-                    style = LogoTextStyle().copy(
-                        fontSize = 24.sp,
-                        color = MaterialTheme.colorScheme.onSurface
+                    text = title,
+                    style = H4TextStyle().copy(
+                        fontWeight = FontWeight.Bold,
+                        color = palette.primary
                     )
                 )
+            }
+
+            // Profile Avatar (DP)
+            if (avatarRes != null) {
+                Box(
+                    modifier = Modifier
+                        .size(Spacing.s9)
+                        .clip(CircleShape)
+                        .border(Spacing.hairline, palette.outline, CircleShape)
+                        .then(
+                            if (onAvatarClick != null) {
+                                Modifier.clickable { onAvatarClick() }
+                            } else {
+                                Modifier
+                            }
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Image(
+                        painter = painterResource(avatarRes),
+                        contentDescription = stringResource(Res.string.cd_avatar),
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                }
             }
         }
     }
