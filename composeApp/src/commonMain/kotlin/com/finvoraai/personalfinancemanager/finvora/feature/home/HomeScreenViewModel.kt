@@ -22,6 +22,7 @@ data class HomeScreenUiState(
     val totalBalance: Double = 0.0,
     val totalIncome: Double = 0.0,
     val totalExpense: Double = 0.0,
+    val totalTransaction: Double = 0.0,
     val error: String? = null
 )
 
@@ -51,9 +52,12 @@ class HomeScreenViewModel(
                 val expense = transactions.filter { it.transactionType == TransactionType.Expense }
                     .sumOf { it.amount.toDoubleOrNull() ?: 0.0 }
 
+                val totalTx = income + expense
+
                 DebugLogger.generic("Dashboard", "totalIncome", income)
                 DebugLogger.generic("Dashboard", "totalExpense", expense)
                 DebugLogger.generic("Dashboard", "totalBalance", income - expense)
+                DebugLogger.generic("Dashboard", "totalTransaction", totalTx)
 
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
@@ -61,6 +65,7 @@ class HomeScreenViewModel(
                     totalIncome = income,
                     totalExpense = expense,
                     totalBalance = income - expense,
+                    totalTransaction = totalTx,
                     error = null
                 )
             }.onFailure { error ->

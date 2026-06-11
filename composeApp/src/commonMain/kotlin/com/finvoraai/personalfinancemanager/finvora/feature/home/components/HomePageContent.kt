@@ -25,7 +25,9 @@ import com.finvoraai.personalfinancemanager.finvora.feature.auth.AuthViewModel
 import com.finvoraai.personalfinancemanager.finvora.feature.home.HomeScreenViewModel
 import com.finvoraai.personalfinancemanager.finvora.ui.components.AppCard
 import com.finvoraai.personalfinancemanager.finvora.ui.components.ButtonStyle
+import com.finvoraai.personalfinancemanager.finvora.ui.components.ErrorStateView
 import com.finvoraai.personalfinancemanager.finvora.ui.components.FinvoraButton
+import com.finvoraai.personalfinancemanager.finvora.ui.components.LoadingView
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.*
 import com.finvoraai.personalfinancemanager.finvora.ui.uiutils.*
 import com.finvoraai.personalfinancemanager.finvora.ui.utils.collectAsStateLifecycleAware
@@ -78,275 +80,283 @@ fun HomePageContent(
             )
         }
     ) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            state = listState,
-            contentPadding = PaddingValues(
-                top = padding.calculateTopPadding() + Spacing.s12,
-                bottom = padding.calculateBottomPadding() + Spacing.s4,
-                start = Spacing.s4,
-                end = Spacing.s4
-            ),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // 1. Total Balance Card
-            item {
-                AppCard(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = Spacing.s1)
-                ) {
-                    Column(
+        if (uiState.isLoading && uiState.transactions.isEmpty()) {
+            LoadingView(modifier = Modifier.fillMaxSize())
+        } else if (uiState.error != null && uiState.transactions.isEmpty()) {
+            ErrorStateView(
+                errorMessage = Res.string.error_message_generic,
+                onRetry = { viewModel.refresh() },
+                modifier = Modifier.fillMaxSize()
+            )
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                state = listState,
+                contentPadding = PaddingValues(
+                    top = padding.calculateTopPadding() + Spacing.s12,
+                    bottom = padding.calculateBottomPadding() + Spacing.s4,
+                    start = Spacing.s4,
+                    end = Spacing.s4
+                ),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // 1. Total Balance Card
+                item {
+                    AppCard(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(Spacing.s3)
-                    ) {
-                        Text(
-                            text = stringResource(Res.string.dashboard_total_balance),
-                            style = BodyNormal(),
-                            color = palette.textSecondary
-                        )
-                        VSpacer(Spacing.s1)
-                        Text(
-                            text = formatAmount(uiState.totalBalance),
-                            style = H2TextStyle().copy(
-                                fontWeight = FontWeight.Bold,
-                                color = palette.primary
-                            )
-                        )
-                        VSpacer(Spacing.s1)
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            // Income Column
-                            Column(modifier = Modifier.weight(1f)) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(
-                                        painter = painterResource(Res.drawable.ic_arrow_down_left),
-                                        contentDescription = null,
-                                        tint = palette.success,
-                                        modifier = Modifier.size(Spacing.s4)
-                                    )
-                                    HSpacer(Spacing.s1)
-                                    Text(
-                                        text = stringResource(Res.string.dashboard_income_label),
-                                        style = BodyNormal(),
-                                        color = palette.textSecondary
-                                    )
-                                }
-                                VSpacer(Spacing.s1)
-                                Text(
-                                    text = formatAmount(uiState.totalIncome),
-                                    style = H6TextStyle().copy(
-                                        color = palette.success,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                )
-                            }
-
-                            // Expenses Column
-                            Column(modifier = Modifier.weight(1f)) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(
-                                        painter = painterResource(Res.drawable.ic_arrow_up_right),
-                                        contentDescription = null,
-                                        tint = palette.error,
-                                        modifier = Modifier.size(Spacing.s4)
-                                    )
-                                    HSpacer(Spacing.s1)
-                                    Text(
-                                        text = stringResource(Res.string.dashboard_expenses_label),
-                                        style = BodyNormal(),
-                                        color = palette.textSecondary
-                                    )
-                                }
-                                VSpacer(Spacing.s1)
-                                Text(
-                                    text = formatAmount(uiState.totalExpense),
-                                    style = H6TextStyle().copy(
-                                        color = palette.error,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-            // 3. Wealth Insights Section
-            item {
-                VSpacer(Spacing.s3)
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = Spacing.s1),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = stringResource(Res.string.dashboard_wealth_insights),
-                        style = H4TextStyle(),
-                        color = palette.textPrimary
-                    )
-                    Text(
-                        text = stringResource(Res.string.dashboard_view_analysis),
-                        style = BodyNormal().copy(
-                            color = palette.primary,
-                            fontWeight = FontWeight.SemiBold
-                        ),
-                        modifier = Modifier.clickable { /* Handle Analysis Navigation */ }
-                    )
-                }
-            }
-
-            item {
-                val scrollState = rememberScrollState()
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .horizontalScroll(scrollState)
-                        .padding(vertical = Spacing.s1),
-                    horizontalArrangement = Arrangement.spacedBy(Spacing.s3)
-                ) {
-                    // Card 1: AI Growth Forecast
-                    AppCard(
-                        modifier = Modifier.width(Spacing.s40 + Spacing.s8)
+                            .padding(vertical = Spacing.s1)
                     ) {
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = Spacing.s2, vertical = Spacing.s3)
+                                .padding(Spacing.s3)
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(Spacing.s8)
-                                    .clip(RoundedCornerShape(Spacing.s2))
-                                    .background(palette.primary.copy(alpha = 0.1f)),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    painter = painterResource(Res.drawable.ic_trend_up),
-                                    contentDescription = null,
-                                    tint = palette.primary,
-                                    modifier = Modifier.size(Spacing.s4)
-                                )
-                            }
-                            VSpacer(Spacing.s2)
                             Text(
-                                text = stringResource(Res.string.dashboard_ai_growth_title),
-                                style = H6TextStyle().copy(fontWeight = FontWeight.Bold),
-                                color = palette.textPrimary
+                                text = stringResource(Res.string.dashboard_total_balance),
+                                style = BodyNormal(),
+                                color = palette.textSecondary
                             )
                             VSpacer(Spacing.s1)
                             Text(
-                                text = stringResource(Res.string.dashboard_ai_growth_desc),
-                                style = BodySmall(),
-                                color = palette.textSecondary
-                            )
-                        }
-                    }
-
-                    // Card 2: Savings Target achieved
-                    AppCard(
-                        modifier = Modifier.width(Spacing.s40 + Spacing.s8)
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = Spacing.s2, vertical = Spacing.s3)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(Spacing.s8)
-                                    .clip(RoundedCornerShape(Spacing.s2))
-                                    .background(palette.primary.copy(alpha = 0.1f)),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    painter = painterResource(Res.drawable.ic_piggy_bank),
-                                    contentDescription = null,
-                                    tint = palette.primary,
-                                    modifier = Modifier.size(Spacing.s4)
+                                text = formatAmount(uiState.totalBalance),
+                                style = H2TextStyle().copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = palette.primary
                                 )
-                            }
-                            VSpacer(Spacing.s2)
-                            Text(
-                                text = stringResource(Res.string.dashboard_savings_title),
-                                style = H6TextStyle().copy(fontWeight = FontWeight.Bold),
-                                color = palette.textPrimary
                             )
                             VSpacer(Spacing.s1)
-                            Text(
-                                text = stringResource(Res.string.dashboard_savings_desc),
-                                style = BodySmall(),
-                                color = palette.textSecondary
-                            )
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            painter = painterResource(Res.drawable.ic_arrow_down_left),
+                                            contentDescription = null,
+                                            tint = palette.success,
+                                            modifier = Modifier.size(Spacing.s4)
+                                        )
+                                        HSpacer(Spacing.s1)
+                                        Text(
+                                            text = stringResource(Res.string.dashboard_income_label),
+                                            style = BodyNormal(),
+                                            color = palette.textSecondary
+                                        )
+                                    }
+                                    VSpacer(Spacing.s1)
+                                    Text(
+                                        text = formatAmount(uiState.totalIncome),
+                                        style = H6TextStyle().copy(
+                                            color = palette.success,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    )
+                                }
+
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            painter = painterResource(Res.drawable.ic_arrow_up_right),
+                                            contentDescription = null,
+                                            tint = palette.error,
+                                            modifier = Modifier.size(Spacing.s4)
+                                        )
+                                        HSpacer(Spacing.s1)
+                                        Text(
+                                            text = stringResource(Res.string.dashboard_expenses_label),
+                                            style = BodyNormal(),
+                                            color = palette.textSecondary
+                                        )
+                                    }
+                                    VSpacer(Spacing.s1)
+                                    Text(
+                                        text = formatAmount(uiState.totalExpense),
+                                        style = H6TextStyle().copy(
+                                            color = palette.error,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    )
+                                }
+                            }
+
                         }
                     }
                 }
-            }
 
-            // 4. Recent Transactions Section
-            item {
-                VSpacer(Spacing.s3)
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = Spacing.s1),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = stringResource(Res.string.dashboard_recent_transactions),
-                        style = H4TextStyle(),
-                        color = palette.textPrimary
-                    )
-                    Text(
-                        text = stringResource(Res.string.dashboard_see_all),
-                        style = BodyNormal().copy(
-                            color = palette.primary,
-                            fontWeight = FontWeight.SemiBold
-                        ),
-                        modifier = Modifier.clickable { /* Handle See All Navigation */ }
-                    )
-                }
-            }
-
-            if (uiState.transactions.isEmpty() && !uiState.isLoading) {
+                // 2. Wealth Insights Section
                 item {
-                    Text(
-                        text = "No recent transactions.",
-                        modifier = Modifier.padding(Spacing.s4),
-                        color = palette.textSecondary,
-                        style = BodyNormal()
-                    )
+                    VSpacer(Spacing.s3)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = Spacing.s1),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = stringResource(Res.string.dashboard_wealth_insights),
+                            style = H4TextStyle(),
+                            color = palette.textPrimary
+                        )
+                        Text(
+                            text = stringResource(Res.string.dashboard_view_analysis),
+                            style = BodyNormal().copy(
+                                color = palette.primary,
+                                fontWeight = FontWeight.SemiBold
+                            ),
+                            modifier = Modifier.clickable { }
+                        )
+                    }
                 }
-            } else {
-                items(uiState.transactions) { tx ->
-                    TransactionRow(
-                        emoji = tx.emoji,
-                        title = tx.title,
-                        subtitle = tx.category,
-                        amount = "$${tx.amount}",
-                        isIncome = tx.transactionType == TransactionType.Income
-                    )
-                }
-            }
 
-            // 5. Logout Button (Utility)
-            item {
-                VSpacer(Spacing.s3)
-                FinvoraButton(
-                    text = stringResource(Res.string.auth_logout),
-                    onClick = { authViewModel.signOut() },
-                    style = ButtonStyle.SECONDARY,
-                    enabled = !isLoggingOut,
-                    modifier = Modifier.padding(horizontal = Spacing.s4)
-                )
-                VSpacer(Spacing.s3)
+                item {
+                    val scrollState = rememberScrollState()
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(scrollState)
+                            .padding(vertical = Spacing.s1),
+                        horizontalArrangement = Arrangement.spacedBy(Spacing.s3)
+                    ) {
+                        AppCard(
+                            modifier = Modifier.width(Spacing.s40 + Spacing.s8)
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = Spacing.s2, vertical = Spacing.s3)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(Spacing.s8)
+                                        .clip(RoundedCornerShape(Spacing.s2))
+                                        .background(palette.primary.copy(alpha = 0.1f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        painter = painterResource(Res.drawable.ic_trend_up),
+                                        contentDescription = null,
+                                        tint = palette.primary,
+                                        modifier = Modifier.size(Spacing.s4)
+                                    )
+                                }
+                                VSpacer(Spacing.s2)
+                                Text(
+                                    text = stringResource(Res.string.dashboard_ai_growth_title),
+                                    style = H6TextStyle().copy(fontWeight = FontWeight.Bold),
+                                    color = palette.textPrimary
+                                )
+                                VSpacer(Spacing.s1)
+                                Text(
+                                    text = stringResource(Res.string.dashboard_ai_growth_desc),
+                                    style = BodySmall(),
+                                    color = palette.textSecondary
+                                )
+                            }
+                        }
+
+                        AppCard(
+                            modifier = Modifier.width(Spacing.s40 + Spacing.s8)
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = Spacing.s2, vertical = Spacing.s3)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(Spacing.s8)
+                                        .clip(RoundedCornerShape(Spacing.s2))
+                                        .background(palette.primary.copy(alpha = 0.1f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        painter = painterResource(Res.drawable.ic_piggy_bank),
+                                        contentDescription = null,
+                                        tint = palette.primary,
+                                        modifier = Modifier.size(Spacing.s4)
+                                    )
+                                }
+                                VSpacer(Spacing.s2)
+                                Text(
+                                    text = stringResource(Res.string.dashboard_savings_title),
+                                    style = H6TextStyle().copy(fontWeight = FontWeight.Bold),
+                                    color = palette.textPrimary
+                                )
+                                VSpacer(Spacing.s1)
+                                Text(
+                                    text = stringResource(Res.string.dashboard_savings_desc),
+                                    style = BodySmall(),
+                                    color = palette.textSecondary
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // 3. Recent Transactions Section
+                item {
+                    VSpacer(Spacing.s3)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = Spacing.s1),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = stringResource(Res.string.dashboard_recent_transactions),
+                            style = H4TextStyle(),
+                            color = palette.textPrimary
+                        )
+                        Text(
+                            text = stringResource(Res.string.dashboard_see_all),
+                            style = BodyNormal().copy(
+                                color = palette.primary,
+                                fontWeight = FontWeight.SemiBold
+                            ),
+                            modifier = Modifier.clickable { }
+                        )
+                    }
+                }
+
+                if (uiState.transactions.isEmpty()) {
+                    item {
+                        Text(
+                            text = "No recent transactions.",
+                            modifier = Modifier.padding(Spacing.s4),
+                            color = palette.textSecondary,
+                            style = BodyNormal()
+                        )
+                    }
+                } else {
+                    items(uiState.transactions) { tx ->
+                        TransactionRow(
+                            emoji = tx.emoji,
+                            title = tx.title,
+                            subtitle = tx.category,
+                            amount = formatAmount(tx.amount.toDoubleOrNull() ?: 0.0),
+                            date = tx.date,
+                            isIncome = tx.transactionType == TransactionType.Income
+                        )
+                    }
+                }
+
+                // 4. Logout Button
+                item {
+                    VSpacer(Spacing.s3)
+                    FinvoraButton(
+                        text = stringResource(Res.string.auth_logout),
+                        onClick = { authViewModel.signOut() },
+                        style = ButtonStyle.SECONDARY,
+                        enabled = !isLoggingOut,
+                        modifier = Modifier.padding(horizontal = Spacing.s4)
+                    )
+                    VSpacer(Spacing.s3)
+                }
             }
         }
     }
@@ -358,9 +368,13 @@ private fun TransactionRow(
     title: String,
     subtitle: String,
     amount: String,
+    date: String,
     isIncome: Boolean
 ) {
     val palette = LocalAppPalette.current
+    val displayDate = remember(date) {
+        if (date.length >= 10) date.substring(0, 10) else date
+    }
     AppCard(
         modifier = Modifier
             .fillMaxWidth()
@@ -402,13 +416,19 @@ private fun TransactionRow(
                         style = BodySmall(),
                         color = palette.textSecondary
                     )
+                    VSpacer(Spacing.sHalf)
+                    Text(
+                        text = displayDate,
+                        style = BodySmall(),
+                        color = palette.textTertiary
+                    )
                 }
             }
 
             Text(
                 text = amount,
                 style = BodyNormal().copy(fontWeight = FontWeight.Bold),
-                color = if (isIncome) palette.success else palette.textPrimary
+                color = if (isIncome) palette.success else palette.error
             )
         }
     }
