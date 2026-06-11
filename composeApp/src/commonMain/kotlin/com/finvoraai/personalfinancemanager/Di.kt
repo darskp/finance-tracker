@@ -47,6 +47,12 @@ val appModule = module {
     single { get<AppDatabase>().getSettingsDao() }
     single { AuthManager() }
 
+    single { com.finvoraai.personalfinancemanager.finvora.core.network.createHttpClient(get()) }
+    single { com.finvoraai.personalfinancemanager.finvora.data.remote.DashboardApiService(get(), get(), get()) }
+    single<com.finvoraai.personalfinancemanager.finvora.data.repository.DashboardRepository> {
+        com.finvoraai.personalfinancemanager.finvora.data.repository.DashboardRepositoryImpl(get())
+    }
+
     viewModelOf(::OnBoardingViewModel)
     viewModelOf(::HomeScreenViewModel)
     viewModelOf(::MainViewModel)

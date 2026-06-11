@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -18,6 +19,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.finvoraai.personalfinancemanager.finvora.data.model.remote.TransactionType
 import com.finvoraai.personalfinancemanager.finvora.feature.auth.AuthUiState
 import com.finvoraai.personalfinancemanager.finvora.feature.auth.AuthViewModel
 import com.finvoraai.personalfinancemanager.finvora.feature.home.HomeScreenViewModel
@@ -31,6 +33,18 @@ import finvoraai.composeapp.generated.resources.*
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import kotlin.math.abs
+
+private fun formatAmount(amount: Double): String {
+    val absAmount = abs(amount)
+    val prefix = if (amount < 0) "-" else ""
+    return when {
+        absAmount >= 1_000_000_000 -> "${prefix}$${(absAmount / 1_000_000_000).toString().take(4).removeSuffix(".")}B"
+        absAmount >= 1_000_000 -> "${prefix}$${(absAmount / 1_000_000).toString().take(4).removeSuffix(".")}M"
+        absAmount >= 1_000 -> "${prefix}$${(absAmount / 1_000).toString().take(4).removeSuffix(".")}k"
+        else -> "${prefix}$${absAmount.toLong()}"
+    }
+}
 
 @Suppress("UnusedParameter")
 @Composable
@@ -94,7 +108,7 @@ fun HomePageContent(
                         )
                         VSpacer(Spacing.s1)
                         Text(
-                            text = stringResource(Res.string.dashboard_balance_value),
+                            text = formatAmount(uiState.totalBalance),
                             style = H2TextStyle().copy(
                                 fontWeight = FontWeight.Bold,
                                 color = palette.primary
@@ -124,7 +138,7 @@ fun HomePageContent(
                                 }
                                 VSpacer(Spacing.s1)
                                 Text(
-                                    text = stringResource(Res.string.dashboard_income_value),
+                                    text = formatAmount(uiState.totalIncome),
                                     style = H6TextStyle().copy(
                                         color = palette.success,
                                         fontWeight = FontWeight.Bold
@@ -150,7 +164,7 @@ fun HomePageContent(
                                 }
                                 VSpacer(Spacing.s1)
                                 Text(
-                                    text = stringResource(Res.string.dashboard_expenses_value),
+                                    text = formatAmount(uiState.totalExpense),
                                     style = H6TextStyle().copy(
                                         color = palette.error,
                                         fontWeight = FontWeight.Bold
@@ -301,48 +315,25 @@ fun HomePageContent(
                 }
             }
 
-            // Transaction 1: Apple Store
-            item {
-                TransactionRow(
-                    iconRes = Res.drawable.ic_cart,
-                    title = stringResource(Res.string.dashboard_tx_apple_title),
-                    subtitle = stringResource(Res.string.dashboard_tx_apple_sub),
-                    amount = stringResource(Res.string.dashboard_tx_apple_value),
-                    isIncome = false
-                )
-            }
-
-            // Transaction 2: Salary Deposit
-            item {
-                TransactionRow(
-                    iconRes = Res.drawable.ic_wallet,
-                    title = stringResource(Res.string.dashboard_tx_salary_title),
-                    subtitle = stringResource(Res.string.dashboard_tx_salary_sub),
-                    amount = stringResource(Res.string.dashboard_tx_salary_value),
-                    isIncome = true
-                )
-            }
-
-            // Transaction 3: The Green Bistro
-            item {
-                TransactionRow(
-                    iconRes = Res.drawable.ic_restaurant,
-                    title = stringResource(Res.string.dashboard_tx_bistro_title),
-                    subtitle = stringResource(Res.string.dashboard_tx_bistro_sub),
-                    amount = stringResource(Res.string.dashboard_tx_bistro_value),
-                    isIncome = false
-                )
-            }
-
-            // Transaction 4: Shell Station
-            item {
-                TransactionRow(
-                    iconRes = Res.drawable.ic_car,
-                    title = stringResource(Res.string.dashboard_tx_shell_title),
-                    subtitle = stringResource(Res.string.dashboard_tx_shell_sub),
-                    amount = stringResource(Res.string.dashboard_tx_shell_value),
-                    isIncome = false
-                )
+            if (uiState.transactions.isEmpty() && !uiState.isLoading) {
+                item {
+                    Text(
+                        text = "No recent transactions.",
+                        modifier = Modifier.padding(Spacing.s4),
+                        color = palette.textSecondary,
+                        style = BodyNormal()
+                    )
+                }
+            } else {
+                items(uiState.transactions) { tx ->
+                    TransactionRow(
+                        emoji = tx.emoji,
+                        title = tx.title,
+                        subtitle = tx.category,
+                        amount = "$${tx.amount}",
+                        isIncome = tx.transactionType == TransactionType.Income
+                    )
+                }
             }
 
             // 5. Logout Button (Utility)
@@ -363,7 +354,7 @@ fun HomePageContent(
 
 @Composable
 private fun TransactionRow(
-    iconRes: org.jetbrains.compose.resources.DrawableResource,
+    emoji: String,
     title: String,
     subtitle: String,
     amount: String,
@@ -393,11 +384,9 @@ private fun TransactionRow(
                         .background(palette.secondary),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        painter = painterResource(iconRes),
-                        contentDescription = null,
-                        tint = palette.primary,
-                        modifier = Modifier.size(Spacing.s4)
+                    Text(
+                        text = emoji,
+                        style = H4TextStyle()
                     )
                 }
                 HSpacer(Spacing.s3)

@@ -15,6 +15,7 @@ expect class AuthManager() {
     suspend fun signIn(email: String, password: String): SignInResult
     suspend fun verifyClientTrustCode(code: String)
     suspend fun signOut()
+    suspend fun getToken(): String?
     fun observeUser(): Flow<AuthUser?>
     fun observeIsInitialized(): Flow<Boolean>
     suspend fun signInWithGoogle()

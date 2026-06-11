@@ -46,9 +46,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.finvoraai.personalfinancemanager.finvora.core.debug.sections.ApiDebugSection
 import com.finvoraai.personalfinancemanager.finvora.core.debug.sections.AuthDebugSection
+import com.finvoraai.personalfinancemanager.finvora.core.debug.sections.DashboardDebugSection
 import com.finvoraai.personalfinancemanager.finvora.core.debug.sections.DatabaseDebugSection
 import com.finvoraai.personalfinancemanager.finvora.core.debug.sections.NavigationDebugSection
 import com.finvoraai.personalfinancemanager.finvora.core.debug.sections.OnboardingDebugSection
+import com.finvoraai.personalfinancemanager.finvora.core.network.BASE_API_URL
 import com.finvoraai.personalfinancemanager.finvora.data.local.AppDatabase
 import finvoraai.composeapp.generated.resources.Res
 import finvoraai.composeapp.generated.resources.cd_debug_close
@@ -151,17 +153,25 @@ fun DebugOverlay() {
                 ) {
                     item { Spacer(Modifier.height(8.dp)) }
 
+                    // ── Static config info ─────────────────────────────────────
+                    item {
+                        DebugSectionCard(title = "CONFIG", accentColor = AccentGreen) {
+                            DebugStaticRow("API Base URL", BASE_API_URL)
+                        }
+                    }
+
                     // ── Named sections (populated by DebugLog.log calls) ──────
                     item { AuthDebugSection(entries = sections["Auth"] ?: emptyList()) }
                     item { OnboardingDebugSection(entries = sections["Onboarding"] ?: emptyList()) }
                     item { NavigationDebugSection(entries = sections["Navigation"] ?: emptyList()) }
                     item { ApiDebugSection(entries = sections["API"] ?: emptyList()) }
+                    item { DashboardDebugSection(entries = sections["Dashboard"] ?: emptyList()) }
 
                     // ── Live Room DB section (observes DAOs directly) ─────────
                     item { DatabaseDebugSection(db = db) }
 
                     // ── Any extra sections logged from future features ────────
-                    val extraKeys = sections.keys - setOf("Auth", "Onboarding", "Navigation", "API")
+                    val extraKeys = sections.keys - setOf("Auth", "Onboarding", "Navigation", "API", "Dashboard")
                     items(extraKeys.toList()) { key ->
                         GenericDebugSection(
                             title = key,

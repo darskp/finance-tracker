@@ -12,6 +12,7 @@ internal object DebugColors {
     val Navigation = Color(0xFFFF6E40)
     val Api = Color(0xFF82B1FF)
     val Database = Color(0xFFEF9A9A)
+    val Dashboard = Color(0xFF69F0AE)
     val Generic = Color(0xFFBB86FC)
     val TextMuted = Color(0xFF8B949E)
 

@@ -26,6 +26,11 @@ actual class AuthManager actual constructor() {
         // Placeholder for iOS
     }
 
+    actual suspend fun getToken(): String? {
+        // Placeholder for iOS
+        return null
+    }
+
     actual fun observeIsInitialized(): Flow<Boolean> = flowOf(true)
 
     actual fun observeUser(): Flow<AuthUser?> {

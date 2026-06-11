@@ -78,6 +78,7 @@ kotlin {
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.serialization.kotlinx.json)
             implementation(libs.ktor.client.logging)
+            implementation(libs.ktor.client.auth)
             implementation(libs.kotlinx.datetime)
             implementation(libs.gitlive.firebase.analytics)
         }
@@ -130,6 +131,7 @@ android {
         versionCode = 1
         versionName = "1.1.0"
         buildConfigField("String", "CLERK_PUBLISHABLE_KEY", "\"${keystoreProperties["CLERK_PUBLISHABLE_KEY"]}\"")
+        buildConfigField("String", "BACKEND_API_URL", "\"${keystoreProperties["BACKEND_API_URL"] ?: "https://expense-tracker-backend-eight-sandy.vercel.app/api"}\"")
     }
     buildFeatures {
         buildConfig = true

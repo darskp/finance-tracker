@@ -4,6 +4,8 @@ import com.clerk.api.Clerk
 import com.clerk.api.network.serialization.errorMessage
 import com.clerk.api.network.serialization.onFailure
 import com.clerk.api.network.serialization.onSuccess
+import com.finvoraai.personalfinancemanager.finvora.core.debug.DebugLogger
+import kotlinx.coroutines.delay
 import com.clerk.api.signin.SignIn
 import com.clerk.api.signin.attemptFirstFactor
 import com.clerk.api.signin.attemptSecondFactor
@@ -210,6 +212,25 @@ actual class AuthManager actual constructor() {
                 println("CLERK: <<< signOut FAILED: ${it.errorMessage}")
                 throw Exception(it.errorMessage)
             }
+    }
+
+    actual suspend fun getToken(): String? {
+        return try {
+            // Retry up to 5 times with short delay to wait for Clerk to load the JWT
+            var token: String? = null
+            for (i in 1..5) {
+                token = Clerk.session?.lastActiveToken?.jwt
+                if (token != null) break
+                delay(200)
+            }
+            println("CLERK: <<< getToken ${if (token != null) "SUCCESS" else "null after retries"}")
+            DebugLogger.auth("getToken", if (token != null) "OK (${token.take(20)}...)" else "null after retries")
+            token
+        } catch (e: Exception) {
+            println("CLERK: <<< getToken FAILED: ${e.message}")
+            DebugLogger.auth("getToken", "ERROR: ${e.message}")
+            null
+        }
     }
 
     actual fun observeIsInitialized(): Flow<Boolean> = Clerk.isInitialized
