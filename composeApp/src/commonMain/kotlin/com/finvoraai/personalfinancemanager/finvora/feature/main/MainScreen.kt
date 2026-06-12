@@ -20,6 +20,7 @@ import com.finvoraai.personalfinancemanager.finvora.core.debug.DebugBuildCheck
 import com.finvoraai.personalfinancemanager.finvora.core.debug.DebugFloatingButton
 import com.finvoraai.personalfinancemanager.finvora.core.debug.DebugLogger
 import com.finvoraai.personalfinancemanager.finvora.core.debug.DebugOverlay
+import com.finvoraai.personalfinancemanager.finvora.core.network.SessionManager
 import com.finvoraai.personalfinancemanager.finvora.feature.onboarding.RootNavigation
 import com.finvoraai.personalfinancemanager.finvora.feature.splash.SplashScreen
 import com.finvoraai.personalfinancemanager.finvora.ui.navigation.NavRoute
@@ -43,6 +44,15 @@ fun MainScreen(
 
     var lockedDestination by remember { mutableStateOf<String?>(null) }
     var initialRoute by remember { mutableStateOf<NavRoute?>(null) }
+
+    LaunchedEffect(Unit) {
+        SessionManager.init {
+            initialRoute = NavRoute.SignInScreen
+            navController.navigate(RootNavGraph.Onboarding.route) {
+                popUpTo(RootNavGraph.Main.route) { inclusive = true }
+            }
+        }
+    }
 
     LaunchedEffect(startupDestination) {
         DebugLogger.navigation("startupDestinationChanged", startupDestination.toString())

@@ -4,12 +4,14 @@ import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.tokens.Motion
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 import com.finvoraai.personalfinancemanager.finvora.core.debug.DebugLogger
+import com.finvoraai.personalfinancemanager.finvora.core.network.ApiResult
 import com.finvoraai.personalfinancemanager.finvora.data.model.remote.TransactionDto
 import com.finvoraai.personalfinancemanager.finvora.data.model.remote.TransactionRequest
 import com.finvoraai.personalfinancemanager.finvora.data.model.remote.TransactionType
@@ -36,53 +38,100 @@ class HomeScreenViewModel(
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
 
+    private var loadJob: Job? = null
+
     init {
         loadTransactions()
     }
 
     private fun loadTransactions() {
+        if (loadJob?.isActive == true) {
+            DebugLogger.network("ViewModel", "loadTransactions() skipped — already loading")
+            return
+        }
         DebugLogger.network("ViewModel", "loadTransactions() started")
-        viewModelScope.launch {
+        loadJob = viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
-            val result = dashboardRepository.getAllTransactions()
-            result.onSuccess { transactions ->
-                DebugLogger.network("ViewModel", "loadTransactions() success: ${transactions.size} transactions")
-                val income = transactions.filter { it.transactionType == TransactionType.Income }
-                    .sumOf { it.amount.toDoubleOrNull() ?: 0.0 }
-                val expense = transactions.filter { it.transactionType == TransactionType.Expense }
-                    .sumOf { it.amount.toDoubleOrNull() ?: 0.0 }
+            when (val result = dashboardRepository.getAllTransactions()) {
+                is ApiResult.Success -> {
+                    val transactions = result.data
+                    DebugLogger.network("ViewModel", "loadTransactions() success: ${transactions.size} transactions")
+                    val income = transactions.filter { it.transactionType == TransactionType.Income }
+                        .sumOf { it.amount.toDoubleOrNull() ?: 0.0 }
+                    val expense = transactions.filter { it.transactionType == TransactionType.Expense }
+                        .sumOf { it.amount.toDoubleOrNull() ?: 0.0 }
 
-                val totalTx = income + expense
+                    val totalTx = income + expense
 
-                DebugLogger.generic("Dashboard", "totalIncome", income)
-                DebugLogger.generic("Dashboard", "totalExpense", expense)
-                DebugLogger.generic("Dashboard", "totalBalance", income - expense)
-                DebugLogger.generic("Dashboard", "totalTransaction", totalTx)
+                    DebugLogger.generic("Dashboard", "totalIncome", income)
+                    DebugLogger.generic("Dashboard", "totalExpense", expense)
+                    DebugLogger.generic("Dashboard", "totalBalance", income - expense)
+                    DebugLogger.generic("Dashboard", "totalTransaction", totalTx)
 
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    transactions = transactions,
-                    totalIncome = income,
-                    totalExpense = expense,
-                    totalBalance = income - expense,
-                    totalTransaction = totalTx,
-                    error = null
-                )
-            }.onFailure { error ->
-                DebugLogger.network("ViewModel", "loadTransactions() failed: ${error.message}")
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    error = error.message ?: "Failed to load transactions"
-                )
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        transactions = transactions,
+                        totalIncome = income,
+                        totalExpense = expense,
+                        totalBalance = income - expense,
+                        totalTransaction = totalTx,
+                        error = null
+                    )
+                }
+                is ApiResult.Error -> {
+                    DebugLogger.network("ViewModel", "loadTransactions() failed: ${result.error.message}")
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = result.error.message
+                    )
+                }
             }
         }
     }
 
     fun refresh() {
+        if (loadJob?.isActive == true) {
+            DebugLogger.network("ViewModel", "refresh() skipped — already loading")
+            return
+        }
         DebugLogger.network("ViewModel", "refresh() triggered")
-        viewModelScope.launch {
-            _isRefreshing.value = true
-            loadTransactions()
+        _isRefreshing.value = true
+        _uiState.value = _uiState.value.copy(isLoading = true)
+        loadJob = viewModelScope.launch {
+            when (val result = dashboardRepository.getAllTransactions()) {
+                is ApiResult.Success -> {
+                    val transactions = result.data
+                    DebugLogger.network("ViewModel", "refresh() success: ${transactions.size} transactions")
+                    val income = transactions.filter { it.transactionType == TransactionType.Income }
+                        .sumOf { it.amount.toDoubleOrNull() ?: 0.0 }
+                    val expense = transactions.filter { it.transactionType == TransactionType.Expense }
+                        .sumOf { it.amount.toDoubleOrNull() ?: 0.0 }
+
+                    val totalTx = income + expense
+
+                    DebugLogger.generic("Dashboard", "totalIncome", income)
+                    DebugLogger.generic("Dashboard", "totalExpense", expense)
+                    DebugLogger.generic("Dashboard", "totalBalance", income - expense)
+                    DebugLogger.generic("Dashboard", "totalTransaction", totalTx)
+
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        transactions = transactions,
+                        totalIncome = income,
+                        totalExpense = expense,
+                        totalBalance = income - expense,
+                        totalTransaction = totalTx,
+                        error = null
+                    )
+                }
+                is ApiResult.Error -> {
+                    DebugLogger.network("ViewModel", "refresh() failed: ${result.error.message}")
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = result.error.message
+                    )
+                }
+            }
             _isRefreshing.value = false
         }
     }
@@ -90,14 +139,14 @@ class HomeScreenViewModel(
     fun addIncomeEntry(request: TransactionRequest) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
-            val result = dashboardRepository.addIncome(request)
-            result.onSuccess {
-                loadTransactions()
-            }.onFailure { error ->
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    error = error.message ?: "Failed to add income"
-                )
+            when (val result = dashboardRepository.addIncome(request)) {
+                is ApiResult.Success -> loadTransactions()
+                is ApiResult.Error -> {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = result.error.message
+                    )
+                }
             }
         }
     }
@@ -105,14 +154,14 @@ class HomeScreenViewModel(
     fun updateIncomeEntry(id: String, request: TransactionRequest) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
-            val result = dashboardRepository.updateIncome(id, request)
-            result.onSuccess {
-                loadTransactions()
-            }.onFailure { error ->
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    error = error.message ?: "Failed to update income"
-                )
+            when (val result = dashboardRepository.updateIncome(id, request)) {
+                is ApiResult.Success -> loadTransactions()
+                is ApiResult.Error -> {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = result.error.message
+                    )
+                }
             }
         }
     }
@@ -120,14 +169,14 @@ class HomeScreenViewModel(
     fun deleteIncomeEntry(id: String) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
-            val result = dashboardRepository.deleteIncome(id)
-            result.onSuccess {
-                loadTransactions()
-            }.onFailure { error ->
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    error = error.message ?: "Failed to delete income"
-                )
+            when (val result = dashboardRepository.deleteIncome(id)) {
+                is ApiResult.Success -> loadTransactions()
+                is ApiResult.Error -> {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = result.error.message
+                    )
+                }
             }
         }
     }
@@ -135,14 +184,14 @@ class HomeScreenViewModel(
     fun addExpenseEntry(request: TransactionRequest) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
-            val result = dashboardRepository.addExpense(request)
-            result.onSuccess {
-                loadTransactions()
-            }.onFailure { error ->
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    error = error.message ?: "Failed to add expense"
-                )
+            when (val result = dashboardRepository.addExpense(request)) {
+                is ApiResult.Success -> loadTransactions()
+                is ApiResult.Error -> {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = result.error.message
+                    )
+                }
             }
         }
     }
@@ -150,14 +199,14 @@ class HomeScreenViewModel(
     fun updateExpenseEntry(id: String, request: TransactionRequest) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
-            val result = dashboardRepository.updateExpense(id, request)
-            result.onSuccess {
-                loadTransactions()
-            }.onFailure { error ->
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    error = error.message ?: "Failed to update expense"
-                )
+            when (val result = dashboardRepository.updateExpense(id, request)) {
+                is ApiResult.Success -> loadTransactions()
+                is ApiResult.Error -> {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = result.error.message
+                    )
+                }
             }
         }
     }
@@ -165,14 +214,14 @@ class HomeScreenViewModel(
     fun deleteExpenseEntry(id: String) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
-            val result = dashboardRepository.deleteExpense(id)
-            result.onSuccess {
-                loadTransactions()
-            }.onFailure { error ->
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    error = error.message ?: "Failed to delete expense"
-                )
+            when (val result = dashboardRepository.deleteExpense(id)) {
+                is ApiResult.Success -> loadTransactions()
+                is ApiResult.Error -> {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = result.error.message
+                    )
+                }
             }
         }
     }

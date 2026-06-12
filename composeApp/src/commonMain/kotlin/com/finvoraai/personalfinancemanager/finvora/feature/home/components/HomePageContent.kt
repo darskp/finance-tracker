@@ -71,13 +71,17 @@ fun HomePageContent(
         onRefresh = { viewModel.refresh() },
         modifier = Modifier.fillMaxSize(),
         indicator = {
-            PullToRefreshDefaults.Indicator(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(top = padding.calculateTopPadding()),
-                isRefreshing = isRefreshing,
-                state = pullRefreshState
-            )
+            MaterialTheme(
+                colorScheme = MaterialTheme.colorScheme.copy(primary = palette.primary)
+            ) {
+                PullToRefreshDefaults.Indicator(
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(top = padding.calculateTopPadding()),
+                    isRefreshing = isRefreshing,
+                    state = pullRefreshState
+                )
+            }
         }
     ) {
         if (uiState.isLoading && uiState.transactions.isEmpty()) {
