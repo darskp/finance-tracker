@@ -14,14 +14,11 @@ import io.ktor.client.request.setBody
 class DashboardApiService(
     private val client: HttpClient
 ) {
-    suspend fun getAllTransactions(): List<TransactionDto> =
-        client.get("get-alltransaction").body()
+    suspend fun getAllTransactions(): List<TransactionDto> = client.get("get-alltransaction").body()
 
-    suspend fun getIncome(): List<TransactionDto> =
-        client.get("get-income").body()
+    suspend fun getIncome(): List<TransactionDto> = client.get("get-income").body()
 
-    suspend fun getExpense(): List<TransactionDto> =
-        client.get("get-expense").body()
+    suspend fun getExpense(): List<TransactionDto> = client.get("get-expense").body()
 
     suspend fun addIncome(request: TransactionRequest): TransactionDto =
         client.post("add-income") { setBody(request) }.body()
@@ -29,8 +26,7 @@ class DashboardApiService(
     suspend fun updateIncome(id: String, request: TransactionRequest): TransactionDto =
         client.put("update-income/$id") { setBody(request) }.body()
 
-    suspend fun deleteIncome(id: String): MessageResponse =
-        client.delete("delete-income/$id").body()
+    suspend fun deleteIncome(id: String): MessageResponse = client.delete("delete-income/$id").body()
 
     suspend fun addExpense(request: TransactionRequest): TransactionDto =
         client.post("add-expense") { setBody(request) }.body()
@@ -38,6 +34,5 @@ class DashboardApiService(
     suspend fun updateExpense(id: String, request: TransactionRequest): TransactionDto =
         client.put("update-expense/$id") { setBody(request) }.body()
 
-    suspend fun deleteExpense(id: String): MessageResponse =
-        client.delete("delete-expense/$id").body()
+    suspend fun deleteExpense(id: String): MessageResponse = client.delete("delete-expense/$id").body()
 }

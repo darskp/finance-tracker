@@ -5,10 +5,7 @@ import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.ktor.http.HttpStatusCode
 
-suspend fun <T> safeApiCall(
-    tag: String = "API",
-    block: suspend () -> T
-): ApiResult<T> {
+suspend fun <T> safeApiCall(tag: String = "API", block: suspend () -> T): ApiResult<T> {
     DebugLogger.network(tag, "starting")
     return try {
         val result = block()

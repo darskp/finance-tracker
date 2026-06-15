@@ -149,4 +149,25 @@
     <string name="select_theme_title">Select App Theme</string>
     <string name="btn_cancel">Cancel</string>
     <string name="current_theme_label">Current Theme</string>
+
+    <!-- Add Transaction Screen -->
+    <string name="transaction_new_title">New Transaction</string>
+    <string name="transaction_type_expense">Expense</string>
+    <string name="transaction_type_income">Income</string>
+    <string name="transaction_amount_label">Amount</string>
+    <string name="transaction_title_label">Title</string>
+    <string name="transaction_title_hint">What was this for?</string>
+    <string name="transaction_category_label">Category</string>
+    <string name="transaction_category_hint">Select a Category</string>
+    <string name="transaction_date_label">Date</string>
+    <string name="transaction_date_today">Today</string>
+    <string name="transaction_save_btn">Save Transaction</string>
+    <string name="transaction_select_category">Select Category</string>
+    <string name="category_shopping">Shopping</string>
+    <string name="category_food">Food</string>
+    <string name="category_transport">Transport</string>
+    <string name="category_health">Health</string>
+    <string name="category_bills">Bills</string>
+    <string name="category_income">Income</string>
+    <string name="category_other">Other</string>
 </resources>

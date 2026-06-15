@@ -20,6 +20,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.finvoraai.personalfinancemanager.finvora.feature.chat.ChatScreen
 import com.finvoraai.personalfinancemanager.finvora.feature.home.HomeScreen
 import com.finvoraai.personalfinancemanager.finvora.feature.main.MainViewModel
+import com.finvoraai.personalfinancemanager.finvora.feature.transaction.AddTransactionScreen
 import com.finvoraai.personalfinancemanager.finvora.ui.components.SimpleBottomNavigation
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.Spacing
 import org.koin.compose.viewmodel.koinViewModel
@@ -72,6 +73,12 @@ fun MainNavigation(
 
                 composable<NavRoute.ChatScreen> {
                     ChatScreen(
+                        navController = navController
+                    )
+                }
+
+                composable<NavRoute.AddTransactionScreen> {
+                    AddTransactionScreen(
                         navController = navController
                     )
                 }

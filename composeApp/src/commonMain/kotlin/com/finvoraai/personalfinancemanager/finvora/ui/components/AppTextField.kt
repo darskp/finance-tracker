@@ -70,6 +70,7 @@ fun AppTextField(
     leadingIcon: ImageVector? = null,
     leadingIconPainter: Painter? = null,
     trailingIcon: ImageVector? = null,
+    trailingIconPainter: Painter? = null,
     shape: Shape = RoundedCornerShape(Spacing.s3),
     singleLine: Boolean = true,
     textStyle: TextStyle = BodyLarge().copy(
@@ -213,6 +214,15 @@ fun AppTextField(
                                         modifier = Modifier.size(Spacing.s5)
                                     )
                                 }
+                            }
+
+                            trailingIconPainter != null -> {
+                                Icon(
+                                    painter = trailingIconPainter,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                                    modifier = Modifier.size(Spacing.s5)
+                                )
                             }
 
                             trailingIcon != null -> {

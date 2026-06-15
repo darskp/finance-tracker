@@ -22,14 +22,11 @@ interface DashboardRepository {
 class DashboardRepositoryImpl(
     private val apiService: DashboardApiService
 ) : DashboardRepository {
-    override suspend fun getAllTransactions() =
-        safeApiCall("getAllTransactions") { apiService.getAllTransactions() }
+    override suspend fun getAllTransactions() = safeApiCall("getAllTransactions") { apiService.getAllTransactions() }
 
-    override suspend fun getIncome() =
-        safeApiCall("getIncome") { apiService.getIncome() }
+    override suspend fun getIncome() = safeApiCall("getIncome") { apiService.getIncome() }
 
-    override suspend fun getExpense() =
-        safeApiCall("getExpense") { apiService.getExpense() }
+    override suspend fun getExpense() = safeApiCall("getExpense") { apiService.getExpense() }
 
     override suspend fun addIncome(request: TransactionRequest) =
         safeApiCall("addIncome") { apiService.addIncome(request) }
@@ -37,8 +34,7 @@ class DashboardRepositoryImpl(
     override suspend fun updateIncome(id: String, request: TransactionRequest) =
         safeApiCall("updateIncome") { apiService.updateIncome(id, request) }
 
-    override suspend fun deleteIncome(id: String) =
-        safeApiCall("deleteIncome") { apiService.deleteIncome(id) }
+    override suspend fun deleteIncome(id: String) = safeApiCall("deleteIncome") { apiService.deleteIncome(id) }
 
     override suspend fun addExpense(request: TransactionRequest) =
         safeApiCall("addExpense") { apiService.addExpense(request) }
@@ -46,6 +42,5 @@ class DashboardRepositoryImpl(
     override suspend fun updateExpense(id: String, request: TransactionRequest) =
         safeApiCall("updateExpense") { apiService.updateExpense(id, request) }
 
-    override suspend fun deleteExpense(id: String) =
-        safeApiCall("deleteExpense") { apiService.deleteExpense(id) }
+    override suspend fun deleteExpense(id: String) = safeApiCall("deleteExpense") { apiService.deleteExpense(id) }
 }

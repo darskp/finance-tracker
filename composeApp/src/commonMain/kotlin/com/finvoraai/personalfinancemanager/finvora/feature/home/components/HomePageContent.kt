@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -28,6 +29,7 @@ import com.finvoraai.personalfinancemanager.finvora.ui.components.ButtonStyle
 import com.finvoraai.personalfinancemanager.finvora.ui.components.ErrorStateView
 import com.finvoraai.personalfinancemanager.finvora.ui.components.FinvoraButton
 import com.finvoraai.personalfinancemanager.finvora.ui.components.LoadingView
+import com.finvoraai.personalfinancemanager.finvora.ui.navigation.NavRoute
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.*
 import com.finvoraai.personalfinancemanager.finvora.ui.uiutils.*
 import com.finvoraai.personalfinancemanager.finvora.ui.utils.collectAsStateLifecycleAware
@@ -41,10 +43,10 @@ private fun formatAmount(amount: Double): String {
     val absAmount = abs(amount)
     val prefix = if (amount < 0) "-" else ""
     return when {
-        absAmount >= 1_000_000_000 -> "${prefix}$${(absAmount / 1_000_000_000).toString().take(4).removeSuffix(".")}B"
-        absAmount >= 1_000_000 -> "${prefix}$${(absAmount / 1_000_000).toString().take(4).removeSuffix(".")}M"
-        absAmount >= 1_000 -> "${prefix}$${(absAmount / 1_000).toString().take(4).removeSuffix(".")}k"
-        else -> "${prefix}$${absAmount.toLong()}"
+        absAmount >= 1_000_000_000 -> "$prefix$${(absAmount / 1_000_000_000).toString().take(4).removeSuffix(".")}B"
+        absAmount >= 1_000_000 -> "$prefix$${(absAmount / 1_000_000).toString().take(4).removeSuffix(".")}M"
+        absAmount >= 1_000 -> "$prefix$${(absAmount / 1_000).toString().take(4).removeSuffix(".")}k"
+        else -> "$prefix$${absAmount.toLong()}"
     }
 }
 
@@ -116,19 +118,41 @@ fun HomePageContent(
                                 .fillMaxWidth()
                                 .padding(Spacing.s3)
                         ) {
-                            Text(
-                                text = stringResource(Res.string.dashboard_total_balance),
-                                style = BodyNormal(),
-                                color = palette.textSecondary
-                            )
-                            VSpacer(Spacing.s1)
-                            Text(
-                                text = formatAmount(uiState.totalBalance),
-                                style = H2TextStyle().copy(
-                                    fontWeight = FontWeight.Bold,
-                                    color = palette.primary
-                                )
-                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column {
+                                    Text(
+                                        text = stringResource(Res.string.dashboard_total_balance),
+                                        style = BodyNormal(),
+                                        color = palette.textSecondary
+                                    )
+                                    VSpacer(Spacing.s1)
+                                    Text(
+                                        text = formatAmount(uiState.totalBalance),
+                                        style = H2TextStyle().copy(
+                                            fontWeight = FontWeight.Bold,
+                                            color = palette.primary
+                                        )
+                                    )
+                                }
+
+                                IconButton(
+                                    onClick = { navController.navigate(NavRoute.AddTransactionScreen) },
+                                    modifier = Modifier
+                                        .size(Spacing.s12)
+                                        .clip(CircleShape)
+                                        .background(palette.primary)
+                                ) {
+                                    Icon(
+                                        painter = painterResource(Res.drawable.ic_add),
+                                        contentDescription = "Add Transaction",
+                                        tint = palette.onPrimary
+                                    )
+                                }
+                            }
                             VSpacer(Spacing.s1)
 
                             Row(
@@ -185,7 +209,6 @@ fun HomePageContent(
                                     )
                                 }
                             }
-
                         }
                     }
                 }

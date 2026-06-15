@@ -4,7 +4,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 enum class TransactionType {
-    Income, Expense
+    Income,
+    Expense
 }
 
 @Serializable

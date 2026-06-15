@@ -94,7 +94,7 @@ class MainViewModel(
         if (currentRoute == null) return false
 
         val hideBottomBarRoutes = listOf<String?>(
-            // NavRoute.AboutUs::class.simpleName
+            NavRoute.AddTransactionScreen::class.simpleName
         )
 
         // Check if current route matches any of the hidden routes
