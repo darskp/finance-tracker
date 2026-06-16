@@ -8,6 +8,7 @@ import com.finvoraai.personalfinancemanager.finvora.feature.chat.ChatViewModel
 import com.finvoraai.personalfinancemanager.finvora.feature.home.HomeScreenViewModel
 import com.finvoraai.personalfinancemanager.finvora.feature.main.MainViewModel
 import com.finvoraai.personalfinancemanager.finvora.feature.onboarding.OnBoardingViewModel
+import com.finvoraai.personalfinancemanager.finvora.feature.transaction.AddTransactionViewModel
 import com.finvoraai.personalfinancemanager.finvora.feature.welcome.WelcomeViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -59,6 +60,7 @@ val appModule = module {
     viewModelOf(::AuthViewModel)
     viewModelOf(::ChatViewModel)
     viewModelOf(::WelcomeViewModel)
+    viewModelOf(::AddTransactionViewModel)
 }
 
 fun resetKoin() {

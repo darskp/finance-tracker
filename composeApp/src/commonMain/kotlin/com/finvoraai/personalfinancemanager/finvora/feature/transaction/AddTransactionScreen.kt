@@ -45,6 +45,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
+import org.koin.compose.viewmodel.koinViewModel
 import com.finvoraai.personalfinancemanager.finvora.ui.components.AppCard
 import com.finvoraai.personalfinancemanager.finvora.ui.components.AppTextField
 import com.finvoraai.personalfinancemanager.finvora.ui.components.FinvoraButton
@@ -122,7 +125,10 @@ data class AddTransactionUiState(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddTransactionScreen(navController: NavController) {
+fun AddTransactionScreen(
+    navController: NavController,
+    viewModel: AddTransactionViewModel = koinViewModel()
+) {
     val palette = LocalAppPalette.current
     val categories = defaultCategories
     var uiState by remember {
@@ -131,6 +137,13 @@ fun AddTransactionScreen(navController: NavController) {
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
+    val submitState by viewModel.submitState.collectAsState()
+
+    LaunchedEffect(submitState.success) {
+        if (submitState.success) {
+            navController.popBackStack()
+        }
+    }
 
     // Category picker bottom sheet
     if (uiState.showCategoryPicker) {
@@ -370,12 +383,27 @@ fun AddTransactionScreen(navController: NavController) {
             // ----------------------------------------------------------------
             // Save button
             // ----------------------------------------------------------------
+            if (submitState.error != null) {
+                Text(
+                    text = submitState.error ?: "",
+                    style = BodyNormal(),
+                    color = palette.error,
+                    modifier = Modifier.padding(bottom = Spacing.s2)
+                )
+            }
             FinvoraButton(
-                text = stringResource(Res.string.transaction_save_btn),
+                text = if (submitState.isLoading) "Saving..." else stringResource(Res.string.transaction_save_btn),
                 onClick = {
-                    // API integration point: POST transaction here in a future task
-                    navController.popBackStack()
+                    viewModel.saveTransaction(
+                        isExpense = uiState.isExpense,
+                        amount = uiState.amount,
+                        title = uiState.title,
+                        category = uiState.selectedCategory?.id ?: "other",
+                        emoji = uiState.selectedCategory?.emoji ?: "📦",
+                        date = uiState.date
+                    )
                 },
+                enabled = !submitState.isLoading,
                 modifier = Modifier.fillMaxWidth()
             )
 
