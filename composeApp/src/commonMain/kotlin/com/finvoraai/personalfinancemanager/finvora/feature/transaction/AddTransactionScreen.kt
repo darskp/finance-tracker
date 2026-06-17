@@ -51,6 +51,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import com.finvoraai.personalfinancemanager.finvora.ui.components.AppCard
 import com.finvoraai.personalfinancemanager.finvora.ui.components.AppTextField
 import com.finvoraai.personalfinancemanager.finvora.ui.components.FinvoraButton
+import com.finvoraai.personalfinancemanager.finvora.ui.components.FinvoraDatePickerField
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.BodyNormal
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.H4TextStyle
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.H6TextStyle
@@ -67,7 +68,6 @@ import finvoraai.composeapp.generated.resources.category_shopping
 import finvoraai.composeapp.generated.resources.category_transport
 import finvoraai.composeapp.generated.resources.ic_arrow_back
 import finvoraai.composeapp.generated.resources.ic_arrow_drop_down
-import finvoraai.composeapp.generated.resources.ic_date_range
 import finvoraai.composeapp.generated.resources.transaction_amount_label
 import finvoraai.composeapp.generated.resources.transaction_category_label
 import finvoraai.composeapp.generated.resources.transaction_date_label
@@ -80,6 +80,7 @@ import finvoraai.composeapp.generated.resources.transaction_title_label
 import finvoraai.composeapp.generated.resources.transaction_type_expense
 import finvoraai.composeapp.generated.resources.transaction_type_income
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -114,7 +115,8 @@ data class AddTransactionUiState(
     val currencySymbol: String = "$",
     val title: String = "",
     val selectedCategory: TransactionCategory? = null,
-    val date: String = "",
+    // Stored as LocalDate? — formatted to ISO-8601 when saving
+    val date: LocalDate? = null,
     val isExpense: Boolean = true,
     val showCategoryPicker: Boolean = false
 )
@@ -364,18 +366,14 @@ fun AddTransactionScreen(
             VSpacer(Spacing.s4)
 
             // ----------------------------------------------------------------
-            // Date selector (read-only field — placeholder for future DatePicker)
+            // Date selector — backed by FinvoraDatePickerField (reusable)
             // ----------------------------------------------------------------
-            AppTextField(
-                value = uiState.date,
-                onValueChange = {},
+            FinvoraDatePickerField(
+                selectedDate = uiState.date,
+                onDateSelected = { uiState = uiState.copy(date = it) },
                 label = stringResource(Res.string.transaction_date_label),
                 placeholder = stringResource(Res.string.transaction_date_today),
-                trailingIconPainter = painterResource(Res.drawable.ic_date_range),
-                enabled = false,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { uiState = uiState.copy(date = "Today") }
+                modifier = Modifier.fillMaxWidth()
             )
 
             VSpacer(Spacing.s10)
@@ -394,13 +392,17 @@ fun AddTransactionScreen(
             FinvoraButton(
                 text = if (submitState.isLoading) "Saving..." else stringResource(Res.string.transaction_save_btn),
                 onClick = {
+                    // Format LocalDate? to ISO-8601 date string; blank = ViewModel uses Clock.now()
+                    val isoDate = uiState.date?.let { d ->
+                        "${d.year}-${d.monthNumber.toString().padStart(2, '0')}-${d.dayOfMonth.toString().padStart(2, '0')}"
+                    } ?: ""
                     viewModel.saveTransaction(
                         isExpense = uiState.isExpense,
                         amount = uiState.amount,
                         title = uiState.title,
                         category = uiState.selectedCategory?.id ?: "other",
                         emoji = uiState.selectedCategory?.emoji ?: "📦",
-                        date = uiState.date
+                        date = isoDate
                     )
                 },
                 enabled = !submitState.isLoading,
