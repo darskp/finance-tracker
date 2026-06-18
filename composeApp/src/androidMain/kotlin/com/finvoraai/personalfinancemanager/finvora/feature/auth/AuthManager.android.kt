@@ -1,3 +1,4 @@
+@file:Suppress("MagicNumber", "UnusedPrivateProperty")
 package com.finvoraai.personalfinancemanager.finvora.feature.auth
 
 import com.clerk.api.Clerk

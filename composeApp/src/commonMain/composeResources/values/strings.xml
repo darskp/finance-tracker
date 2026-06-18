@@ -170,4 +170,35 @@
     <string name="category_bills">Bills</string>
     <string name="category_income">Income</string>
     <string name="category_other">Other</string>
+
+    <!-- AI Chat Screen -->
+    <string name="chat_header_model">FINANCE INTELLIGENCE</string>
+    <string name="chat_model_active_label">Llama 3.3 · Active</string>
+    <string name="chat_input_placeholder">Need to change something? Just type here or confirm above…</string>
+    <string name="chat_send_cd">Send message</string>
+    <string name="chat_loading_history">Loading your conversation history…</string>
+    <string name="chat_confirm_btn">Confirm</string>
+    <string name="chat_cancel_btn">Cancel</string>
+    <string name="chat_action_saved">Action Saved</string>
+    <string name="chat_action_cancelled_label">Action Cancelled</string>
+    <string name="chat_action_superseded_label">Superseded by New Request</string>
+    <string name="chat_action_expired_label">Draft Expired</string>
+    <string name="chat_action_review_label">Review Action</string>
+    <string name="chat_action_amount_label">AMOUNT</string>
+    <string name="chat_action_date_label">DATE</string>
+    <string name="chat_action_category_label">CATEGORY</string>
+    <string name="chat_action_income_badge">Income</string>
+    <string name="chat_action_expense_badge">Expense</string>
+    <string name="chat_action_auto_mapped_label">Auto-mapped</string>
+    <string name="chat_typing_indicator">Analyzing live data…</string>
+    <string name="chat_today_label">TODAY</string>
+    <string name="chat_error_reply">Sorry, I had an error connecting to the AI. Please try again.</string>
+    <string name="chat_welcome_message">👋 You can manage your finances here.\n\nTry:\n• Add $500 food\n• Show last 10 transactions\n• Check your balance</string>
+    <string name="chat_bot_cd">AI Finance Bot</string>
+    <string name="chat_draft_updated_label">Draft Updated</string>
+    <string name="chat_action_success_label">Success! Action Executed</string>
+    <string name="chat_action_save_edits">Save Edits</string>
+    <string name="chat_action_edit">Edit</string>
+    <string name="chat_action_editing">Editing Action</string>
+    <string name="chat_processing_status">AI Analytical Engine Processing…</string>
 </resources>

@@ -54,6 +54,9 @@ val appModule = module {
         com.finvoraai.personalfinancemanager.finvora.data.repository.DashboardRepositoryImpl(get())
     }
 
+    single { com.finvoraai.personalfinancemanager.finvora.data.remote.ChatApiService(get()) }
+    single { com.finvoraai.personalfinancemanager.finvora.data.repository.ChatRepository(get()) }
+
     viewModelOf(::OnBoardingViewModel)
     viewModelOf(::HomeScreenViewModel)
     viewModelOf(::MainViewModel)
