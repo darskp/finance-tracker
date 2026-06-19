@@ -1,3 +1,4 @@
+@file:Suppress("MagicNumber", "MaxLineLength")
 package com.finvoraai.personalfinancemanager.finvora.feature.transaction
 
 import androidx.compose.foundation.background

@@ -1,3 +1,4 @@
+@file:Suppress("MagicNumber")
 package com.finvoraai.personalfinancemanager.finvora.feature.home.components
 
 import androidx.compose.foundation.background

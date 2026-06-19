@@ -27,7 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
-import com.finvoraai.personalfinancemanager.finvora.feature.chat.ThemeSelectorDialog
+import com.finvoraai.personalfinancemanager.finvora.ui.components.ThemeSelectorDialog
 import com.finvoraai.personalfinancemanager.finvora.ui.components.AppBackgroundScreen
 import com.finvoraai.personalfinancemanager.finvora.ui.components.ButtonStyle
 import com.finvoraai.personalfinancemanager.finvora.ui.components.FinvoraButton
