@@ -19,6 +19,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.finvoraai.personalfinancemanager.finvora.feature.chat.ChatScreen
 import com.finvoraai.personalfinancemanager.finvora.feature.home.HomeScreen
+import com.finvoraai.personalfinancemanager.finvora.feature.transactions.AllTransactionsScreen
 import com.finvoraai.personalfinancemanager.finvora.feature.main.MainViewModel
 import com.finvoraai.personalfinancemanager.finvora.feature.transaction.AddTransactionScreen
 import com.finvoraai.personalfinancemanager.finvora.ui.components.SimpleBottomNavigation
@@ -56,13 +57,13 @@ fun MainNavigation(
                 startDestination = NavRoute.HomeScreen,
                 modifier = Modifier
                     .fillMaxSize()
-                    .then(
+                    /* .then(
                         if (shouldShowBottomBar) {
                             Modifier.padding(bottom = Spacing.s18)
                         } else {
                             Modifier
                         }
-                    )
+                    ) */
             ) {
                 composable<NavRoute.HomeScreen> {
                     HomeScreen(
@@ -82,9 +83,15 @@ fun MainNavigation(
                         navController = navController
                     )
                 }
+
+                composable<NavRoute.AllTransactionsScreen> {
+                    AllTransactionsScreen(
+                        navController = navController
+                    )
+                }
             }
 
-            AnimatedVisibility(
+            /* AnimatedVisibility(
                 visible = shouldShowBottomBar,
                 enter = slideInVertically { it },
                 exit = slideOutVertically { it },
@@ -118,7 +125,7 @@ fun MainNavigation(
                         }
                     }
                 )
-            }
+            } */
         }
     }
 }

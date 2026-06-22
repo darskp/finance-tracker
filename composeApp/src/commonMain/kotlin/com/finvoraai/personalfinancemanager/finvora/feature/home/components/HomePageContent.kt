@@ -101,7 +101,7 @@ fun HomePageContent(
                 state = listState,
                 contentPadding = PaddingValues(
                     top = padding.calculateTopPadding() + Spacing.s12,
-                    bottom = padding.calculateBottomPadding() + Spacing.s4,
+                    bottom = padding.calculateBottomPadding() + 80.dp,
                     start = Spacing.s4,
                     end = Spacing.s4
                 ),
@@ -137,20 +137,6 @@ fun HomePageContent(
                                             fontWeight = FontWeight.Bold,
                                             color = palette.primary
                                         )
-                                    )
-                                }
-
-                                IconButton(
-                                    onClick = { navController.navigate(NavRoute.AddTransactionScreen) },
-                                    modifier = Modifier
-                                        .size(Spacing.s12)
-                                        .clip(CircleShape)
-                                        .background(palette.primary)
-                                ) {
-                                    Icon(
-                                        painter = painterResource(Res.drawable.ic_add),
-                                        contentDescription = "Add Transaction",
-                                        tint = palette.onPrimary
                                     )
                                 }
                             }
@@ -214,7 +200,55 @@ fun HomePageContent(
                     }
                 }
 
-                // 2. Wealth Insights Section
+                // 2. Recent Transactions Section
+                item {
+                    VSpacer(Spacing.s3)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = Spacing.s1),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = stringResource(Res.string.dashboard_recent_transactions),
+                            style = H4TextStyle(),
+                            color = palette.textPrimary
+                        )
+                        Text(
+                            text = stringResource(Res.string.dashboard_see_all),
+                            style = BodyNormal().copy(
+                                color = palette.primary,
+                                fontWeight = FontWeight.SemiBold
+                            ),
+                            modifier = Modifier.clickable { navController.navigate(NavRoute.AllTransactionsScreen) }
+                        )
+                    }
+                }
+
+                if (uiState.transactions.isEmpty()) {
+                    item {
+                        Text(
+                            text = "No recent transactions.",
+                            modifier = Modifier.padding(Spacing.s4),
+                            color = palette.textSecondary,
+                            style = BodyNormal()
+                        )
+                    }
+                } else {
+                    items(uiState.transactions) { tx ->
+                        TransactionRow(
+                            emoji = tx.emoji,
+                            title = tx.title,
+                            subtitle = tx.category,
+                            amount = formatAmount(tx.amount.toDoubleOrNull() ?: 0.0),
+                            date = tx.date,
+                            isIncome = tx.transactionType == TransactionType.Income
+                        )
+                    }
+                }
+
+                // 3. Wealth Insights Section
                 item {
                     VSpacer(Spacing.s3)
                     Row(
@@ -325,54 +359,6 @@ fun HomePageContent(
                     }
                 }
 
-                // 3. Recent Transactions Section
-                item {
-                    VSpacer(Spacing.s3)
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = Spacing.s1),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = stringResource(Res.string.dashboard_recent_transactions),
-                            style = H4TextStyle(),
-                            color = palette.textPrimary
-                        )
-                        Text(
-                            text = stringResource(Res.string.dashboard_see_all),
-                            style = BodyNormal().copy(
-                                color = palette.primary,
-                                fontWeight = FontWeight.SemiBold
-                            ),
-                            modifier = Modifier.clickable { }
-                        )
-                    }
-                }
-
-                if (uiState.transactions.isEmpty()) {
-                    item {
-                        Text(
-                            text = "No recent transactions.",
-                            modifier = Modifier.padding(Spacing.s4),
-                            color = palette.textSecondary,
-                            style = BodyNormal()
-                        )
-                    }
-                } else {
-                    items(uiState.transactions) { tx ->
-                        TransactionRow(
-                            emoji = tx.emoji,
-                            title = tx.title,
-                            subtitle = tx.category,
-                            amount = formatAmount(tx.amount.toDoubleOrNull() ?: 0.0),
-                            date = tx.date,
-                            isIncome = tx.transactionType == TransactionType.Income
-                        )
-                    }
-                }
-
                 // 4. Logout Button
                 item {
                     VSpacer(Spacing.s3)
@@ -385,6 +371,40 @@ fun HomePageContent(
                     )
                     VSpacer(Spacing.s3)
                 }
+            }
+        }
+
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = Spacing.s4, bottom = padding.calculateBottomPadding() + Spacing.s4),
+            horizontalAlignment = Alignment.End,
+            verticalArrangement = Arrangement.spacedBy(Spacing.s3)
+        ) {
+            FloatingActionButton(
+                onClick = { navController.navigate(NavRoute.ChatScreen) },
+                containerColor = palette.primary,
+                contentColor = palette.onPrimary,
+                shape = CircleShape
+            ) {
+                Icon(
+                    painter = painterResource(Res.drawable.ic_chat),
+                    contentDescription = "Chat",
+                    tint = palette.onPrimary
+                )
+            }
+            
+            FloatingActionButton(
+                onClick = { navController.navigate(NavRoute.AddTransactionScreen) },
+                containerColor = palette.primary,
+                contentColor = palette.onPrimary,
+                shape = CircleShape
+            ) {
+                Icon(
+                    painter = painterResource(Res.drawable.ic_add),
+                    contentDescription = "Add Transaction",
+                    tint = palette.onPrimary
+                )
             }
         }
     }
@@ -411,7 +431,7 @@ private fun TransactionRow(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = Spacing.s3, vertical = Spacing.s2),
+                .padding(horizontal = Spacing.s3, vertical = Spacing.s1),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -421,7 +441,7 @@ private fun TransactionRow(
             ) {
                 Box(
                     modifier = Modifier
-                        .size(Spacing.s9)
+                        .size(Spacing.s8)
                         .clip(RoundedCornerShape(Spacing.s2))
                         .background(palette.secondary),
                     contentAlignment = Alignment.Center
