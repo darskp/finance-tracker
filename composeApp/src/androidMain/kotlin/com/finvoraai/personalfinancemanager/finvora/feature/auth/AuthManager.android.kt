@@ -220,7 +220,7 @@ actual class AuthManager actual constructor() {
             // Retry up to 5 times with short delay to wait for Clerk to load the JWT
             var token: String? = null
             for (i in 1..5) {
-                token = Clerk.session?.lastActiveToken?.jwt
+                Clerk.auth.getToken().onSuccess { token = it }
                 if (token != null) break
                 delay(200)
             }

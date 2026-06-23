@@ -37,9 +37,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -57,6 +60,7 @@ import com.finvoraai.personalfinancemanager.finvora.ui.components.AppBackgroundS
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.BodyNormal
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.BodySmall
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.BodyXSmall
+import com.finvoraai.personalfinancemanager.finvora.ui.theme.H4TextStyle
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.H6TextStyle
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.LocalAppPalette
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.Spacing
@@ -95,7 +99,10 @@ import finvoraai.composeapp.generated.resources.ic_arrow_back
 import finvoraai.composeapp.generated.resources.ic_arrow_forward
 import finvoraai.composeapp.generated.resources.ic_arrow_up_right
 import finvoraai.composeapp.generated.resources.ic_chat
+import finvoraai.composeapp.generated.resources.ic_bot
 import finvoraai.composeapp.generated.resources.ic_info
+import finvoraai.composeapp.generated.resources.chat_input_placeholder_pending
+import finvoraai.composeapp.generated.resources.*
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -111,6 +118,15 @@ fun ChatScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateLifecycleAware()
     var inputText by remember { mutableStateOf("") }
+    var showGuide by remember { mutableStateOf(false) }
+
+    val hasUnresolvedAction = uiState.messages.any { msg ->
+        msg.pendingActions.any { pa -> !msg.resolvedStatus.containsKey(pa.pendingId) }
+    }
+
+    if (showGuide) {
+        ChatGuideSheet(onDismiss = { showGuide = false })
+    }
 
     AppBackgroundScreen {
         Column(
@@ -164,12 +180,14 @@ fun ChatScreen(
                 value = inputText,
                 onValueChange = { inputText = it },
                 isLoading = uiState.isLoading,
+                hasUnresolvedAction = hasUnresolvedAction,
                 onSend = {
                     if (inputText.isNotBlank()) {
                         viewModel.sendMessage(inputText)
                         inputText = ""
                     }
-                }
+                },
+                onInfoClick = { showGuide = true }
             )
         }
     }
@@ -209,7 +227,7 @@ private fun ChatHeader(onBackClick: () -> Unit) {
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                painter = painterResource(Res.drawable.ic_chat),
+                painter = painterResource(Res.drawable.ic_bot),
                 contentDescription = stringResource(Res.string.chat_bot_cd),
                 tint = palette.primary,
                 modifier = Modifier.size(Spacing.s5)
@@ -409,7 +427,7 @@ private fun AssistantMessageBubble(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    painter = painterResource(Res.drawable.ic_chat),
+                    painter = painterResource(Res.drawable.ic_bot),
                     contentDescription = null,
                     tint = palette.primary,
                     modifier = Modifier.size(Spacing.s4)
@@ -848,7 +866,9 @@ private fun ChatInputBar(
     value: String,
     onValueChange: (String) -> Unit,
     isLoading: Boolean,
-    onSend: () -> Unit
+    hasUnresolvedAction: Boolean,
+    onSend: () -> Unit,
+    onInfoClick: () -> Unit
 ) {
     val palette = LocalAppPalette.current
     Row(
@@ -875,8 +895,13 @@ private fun ChatInputBar(
                     color = palette.textTertiary
                 )
             } else if (value.isEmpty()) {
+                val phText = if (hasUnresolvedAction) {
+                    stringResource(Res.string.chat_input_placeholder_pending)
+                } else {
+                    stringResource(Res.string.chat_input_placeholder)
+                }
                 Text(
-                    text = stringResource(Res.string.chat_input_placeholder),
+                    text = phText,
                     style = BodyNormal(),
                     color = palette.textTertiary
                 )
@@ -889,12 +914,16 @@ private fun ChatInputBar(
                 modifier = Modifier.fillMaxWidth().padding(end = Spacing.s6),
                 enabled = !isLoading
             )
-            Icon(
-                painter = painterResource(Res.drawable.ic_info),
-                contentDescription = null,
-                tint = palette.textTertiary,
+            IconButton(
+                onClick = onInfoClick,
                 modifier = Modifier.align(Alignment.CenterEnd).size(Spacing.s5)
-            )
+            ) {
+                Icon(
+                    painter = painterResource(Res.drawable.ic_info),
+                    contentDescription = stringResource(Res.string.chat_guide_cd),
+                    tint = palette.textTertiary
+                )
+            }
         }
 
         // Send button
@@ -927,3 +956,160 @@ private fun ChatInputBar(
         }
     }
 }
+
+// ---------------------------------------------------------------------------
+// Guide Bottom Sheet
+// ---------------------------------------------------------------------------
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ChatGuideSheet(onDismiss: () -> Unit) {
+    val palette = LocalAppPalette.current
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = palette.surface,
+        dragHandle = null,
+        shape = RoundedCornerShape(topStart = Spacing.s4, topEnd = Spacing.s4)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(Spacing.s4)
+                .navigationBarsPadding(),
+            verticalArrangement = Arrangement.spacedBy(Spacing.s4)
+        ) {
+            // Header
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Spacing.s2)
+            ) {
+                Icon(
+                    painter = painterResource(Res.drawable.ic_star), // Fallback for sparkles
+                    contentDescription = null,
+                    tint = palette.primary,
+                    modifier = Modifier.size(Spacing.s5)
+                )
+                Text(
+                    text = stringResource(Res.string.chat_guide_title),
+                    style = H4TextStyle().copy(fontWeight = FontWeight.Bold),
+                    color = palette.textPrimary
+                )
+            }
+            Text(
+                text = stringResource(Res.string.chat_guide_subtitle),
+                style = BodyNormal().copy(fontWeight = FontWeight.Medium),
+                color = palette.textSecondary
+            )
+
+            Spacer(modifier = Modifier.height(Spacing.s2))
+
+            // Track Section
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+                Text(
+                    text = stringResource(Res.string.chat_guide_section_track),
+                    style = BodySmall().copy(fontWeight = FontWeight.Black),
+                    color = palette.textTertiary
+                )
+                Text(
+                    text = stringResource(Res.string.chat_guide_section_track_desc),
+                    style = BodySmall(),
+                    color = palette.textSecondary
+                )
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.s1)) {
+                    val trackExamples = listOf(
+                        Res.string.chat_guide_ex_track_1,
+                        Res.string.chat_guide_ex_track_2,
+                        Res.string.chat_guide_ex_track_3,
+                        Res.string.chat_guide_ex_track_4,
+                        Res.string.chat_guide_ex_track_5
+                    )
+                    trackExamples.forEach { resId ->
+                        Text(
+                            text = "\"${stringResource(resId)}\"",
+                            style = BodyXSmall().copy(fontWeight = FontWeight.Medium),
+                            color = palette.success, // similar to emerald-800
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(palette.success.copy(alpha = 0.1f), RoundedCornerShape(Spacing.s2))
+                                .border(Spacing.hairline, palette.success.copy(alpha = 0.2f), RoundedCornerShape(Spacing.s2))
+                                .padding(Spacing.s2)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(Spacing.s1))
+
+            // Check Section
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+                Text(
+                    text = stringResource(Res.string.chat_guide_section_check),
+                    style = BodySmall().copy(fontWeight = FontWeight.Black),
+                    color = palette.textTertiary
+                )
+                Text(
+                    text = stringResource(Res.string.chat_guide_section_check_desc),
+                    style = BodySmall(),
+                    color = palette.textSecondary
+                )
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.s1)) {
+                    val checkExamples = listOf(
+                        Res.string.chat_guide_ex_check_1,
+                        Res.string.chat_guide_ex_check_2,
+                        Res.string.chat_guide_ex_check_3,
+                        Res.string.chat_guide_ex_check_4,
+                        Res.string.chat_guide_ex_check_5
+                    )
+                    checkExamples.forEach { resId ->
+                        Text(
+                            text = "\"${stringResource(resId)}\"",
+                            style = BodyXSmall().copy(fontWeight = FontWeight.Medium),
+                            color = palette.primary, // similar to blue-800
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(palette.primary.copy(alpha = 0.1f), RoundedCornerShape(Spacing.s2))
+                                .border(Spacing.hairline, palette.primary.copy(alpha = 0.2f), RoundedCornerShape(Spacing.s2))
+                                .padding(Spacing.s2)
+                        )
+                    }
+                }
+            }
+
+            // Note Card
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(palette.warning.copy(alpha = 0.1f), RoundedCornerShape(Spacing.s3))
+                    .border(Spacing.hairline, palette.warning.copy(alpha = 0.3f), RoundedCornerShape(Spacing.s3))
+                    .padding(Spacing.s3),
+                verticalArrangement = Arrangement.spacedBy(Spacing.s1)
+            ) {
+                Text(
+                    text = stringResource(Res.string.chat_guide_note_title),
+                    style = BodySmall().copy(fontWeight = FontWeight.Black),
+                    color = palette.warning
+                )
+                Text(
+                    text = stringResource(Res.string.chat_guide_note_body),
+                    style = BodyXSmall().copy(fontWeight = FontWeight.Medium),
+                    color = palette.warning
+                )
+            }
+
+            // Date Tip
+            Text(
+                text = "✨ \"${stringResource(Res.string.chat_guide_tip)}\"",
+                style = BodyXSmall().copy(fontWeight = FontWeight.Medium),
+                color = palette.textSecondary,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(palette.surfaceVariant, RoundedCornerShape(Spacing.s3))
+                    .padding(Spacing.s3)
+            )
+        }
+    }
+}
+

@@ -15,6 +15,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import org.jetbrains.compose.resources.getString
+import finvoraai.composeapp.generated.resources.*
 
 // ---------------------------------------------------------------------------
 // Domain UI models — internal to this feature package
@@ -55,14 +57,19 @@ data class ChatUiState(
 // ---------------------------------------------------------------------------
 // Default fallback suggestions (shown while API loads)
 // ---------------------------------------------------------------------------
-private val DEFAULT_SUGGESTIONS = listOf(
-    "Add \$500 for food",
-    "Show last 10 transactions",
-    "What is my balance?",
-    "How much did I spend this week?",
-    "Analyze my spending habits",
-    "Check my income this month",
-    "Biggest expense this month"
+// We fetch these asynchronously using getString in loadSuggestions() fallback
+private suspend fun getDefaultSuggestions(): List<String> = listOf(
+    getString(Res.string.chat_suggestion_1),
+    getString(Res.string.chat_suggestion_2),
+    getString(Res.string.chat_suggestion_3),
+    getString(Res.string.chat_suggestion_4),
+    getString(Res.string.chat_suggestion_5),
+    getString(Res.string.chat_suggestion_6),
+    getString(Res.string.chat_suggestion_7),
+    getString(Res.string.chat_suggestion_8),
+    getString(Res.string.chat_suggestion_9),
+    getString(Res.string.chat_suggestion_10),
+    getString(Res.string.chat_suggestion_11)
 )
 
 private const val TYPING_STEP = 3
@@ -92,14 +99,21 @@ class ChatViewModel(
                 result.onSuccess { list ->
                     _uiState.update { it.copy(visibleSuggestions = list.shuffled().take(3)) }
                 }.onFailure {
-                    _uiState.update { it.copy(visibleSuggestions = DEFAULT_SUGGESTIONS.shuffled().take(3)) }
+                    val defaultSugs = getDefaultSuggestions()
+                    _uiState.update { it.copy(visibleSuggestions = defaultSugs.shuffled().take(3)) }
                 }
             }
         }
     }
 
     fun shuffleSuggestions() {
-        _uiState.update { it.copy(visibleSuggestions = DEFAULT_SUGGESTIONS.shuffled().take(3)) }
+        viewModelScope.launch {
+            // Because we only rely on default suggestions when there's an error,
+            // we will fetch defaults here and use them for the shuffle pool.
+            // Ideally we'd use the successful API ones, but since this is localized we can just use defaults.
+            val defaultSugs = getDefaultSuggestions()
+            _uiState.update { it.copy(visibleSuggestions = defaultSugs.shuffled().take(3)) }
+        }
     }
 
     // ── History ───────────────────────────────────────────────────────────
@@ -348,9 +362,9 @@ class ChatViewModel(
         }
     }
 
-    private fun buildWelcomeMessage() = ChatMessage(
+    private suspend fun buildWelcomeMessage() = ChatMessage(
         role = "assistant",
-        content = "👋 You can manage your finances here.\n\nTry:\n• Add \$500 food\n• Show last 10 transactions\n• Check your balance"
+        content = getString(Res.string.chat_welcome_message)
     )
 
     private fun parseIsoToMillis(isoString: String): Long {

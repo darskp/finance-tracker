@@ -1,0 +1,47 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Rounded rect head -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#000000"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M12,8 L20,8 A2,2 0 0,1 22,10 L22,18 A2,2 0 0,1 20,20 L4,20 A2,2 0 0,1 2,18 L2,10 A2,2 0 0,1 4,8 Z" />
+
+    <!-- Antenna post -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#000000"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:pathData="M12,8 L12,4" />
+
+    <!-- Antenna dot -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M12,4 m-1,0 a1,1 0 1,0 2,0 a1,1 0 1,0 -2,0" />
+
+    <!-- Left eye -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M8,14 m-1,0 a1,1 0 1,0 2,0 a1,1 0 1,0 -2,0" />
+
+    <!-- Right eye -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M16,14 m-1,0 a1,1 0 1,0 2,0 a1,1 0 1,0 -2,0" />
+
+    <!-- Mouth line -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#000000"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:pathData="M9,17 L15,17" />
+
+</vector>
