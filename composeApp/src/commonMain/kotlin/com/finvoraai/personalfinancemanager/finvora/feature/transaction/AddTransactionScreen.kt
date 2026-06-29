@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,10 +17,14 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -30,6 +35,8 @@ import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,14 +53,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.LaunchedEffect
-import org.koin.compose.viewmodel.koinViewModel
 import com.finvoraai.personalfinancemanager.finvora.ui.components.AppCard
 import com.finvoraai.personalfinancemanager.finvora.ui.components.AppTextField
 import com.finvoraai.personalfinancemanager.finvora.ui.components.FinvoraButton
 import com.finvoraai.personalfinancemanager.finvora.ui.components.FinvoraDatePickerField
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.BodyNormal
+import com.finvoraai.personalfinancemanager.finvora.ui.theme.BodySmall
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.H4TextStyle
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.H6TextStyle
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.LocalAppPalette
@@ -84,6 +89,7 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.viewmodel.koinViewModel
 
 // ---------------------------------------------------------------------------
 // Data model — structured for future API replacement without a UI redesign
@@ -107,6 +113,51 @@ val defaultCategories: List<TransactionCategory> = listOf(
     TransactionCategory("other", "📦", Res.string.category_other)
 )
 
+data class EmojiSection(val label: String, val emojis: List<String>)
+
+val emojiSections: List<EmojiSection> = listOf(
+    EmojiSection("💰 Money & Finance", listOf(
+        "💰", "💵", "💴", "💶", "💷", "💸", "💳", "🏦", "🪙", "💹",
+        "📈", "📉", "🤑", "💎", "🏧", "💼", "🧾", "🏷️", "🎰", "🪄"
+    )),
+    EmojiSection("🛒 Shopping", listOf(
+        "🛒", "🛍️", "👗", "👟", "👠", "👜", "💍", "💄", "🧴", "🪒",
+        "🧹", "🧺", "📦", "🎁", "🪑", "🛋️", "🖥️", "📱", "⌚", "🎮"
+    )),
+    EmojiSection("🍔 Food & Drinks", listOf(
+        "🍔", "🍕", "🍣", "🍜", "🍱", "🌮", "🥗", "🍰", "🧃", "☕",
+        "🍺", "🍷", "🍦", "🍩", "🥐", "🍳", "🥩", "🥦", "🍎", "🍌"
+    )),
+    EmojiSection("🚕 Transport", listOf(
+        "🚕", "🚗", "🚌", "🚇", "🚂", "✈️", "🚀", "🛳️", "🚲", "🛵",
+        "🏍️", "⛽", "🚦", "🅿️", "🗺️", "🧳", "🎟️", "🛺", "🚁", "🛸"
+    )),
+    EmojiSection("💊 Health & Fitness", listOf(
+        "💊", "🏥", "🩺", "🩹", "💉", "🧬", "🏋️", "🧘", "🚴", "🤸",
+        "🍏", "🥕", "💧", "😴", "🧠", "👁️", "🦷", "🦺", "🩻", "🌡️"
+    )),
+    EmojiSection("🏠 Home & Bills", listOf(
+        "🏠", "🏡", "🔑", "💡", "🔌", "📡", "🛁", "🚿", "🧽", "🪴",
+        "🌊", "🔥", "❄️", "🌬️", "📺", "📻", "☎️", "🔧", "🪛", "🛠️"
+    )),
+    EmojiSection("📚 Education & Work", listOf(
+        "📚", "✏️", "📖", "🎓", "🏫", "💻", "🖨️", "📋", "📌", "📎",
+        "🗂️", "📊", "📝", "🖊️", "🔬", "🔭", "🎨", "🎭", "🎤", "🎧"
+    )),
+    EmojiSection("🎉 Entertainment", listOf(
+        "🎉", "🎬", "🎵", "🎸", "🎹", "🎲", "♟️", "🎯", "🎳", "🎮",
+        "🏆", "🥇", "⚽", "🏀", "🎾", "🏖️", "🏕️", "🎡", "🎢", "🎠"
+    )),
+    EmojiSection("🌿 Nature & Travel", listOf(
+        "🌿", "🌸", "🌻", "🌴", "🏔️", "🌋", "🗼", "🗽", "🏰", "🌅",
+        "🌄", "🌠", "🌈", "⛅", "🌊", "🐬", "🦋", "🐝", "🦁", "🐘"
+    )),
+    EmojiSection("😊 Smileys & Feelings", listOf(
+        "😊", "😍", "🥳", "😎", "🤩", "🙏", "👍", "❤️", "🔥", "✨",
+        "⭐", "🌟", "💫", "🎊", "🎈", "🥰", "😄", "🤗", "💪", "🫶"
+    ))
+)
+
 // ---------------------------------------------------------------------------
 // UI State — currencySymbol is a field so it can later come from settings/locale
 // ---------------------------------------------------------------------------
@@ -116,10 +167,12 @@ data class AddTransactionUiState(
     val currencySymbol: String = "$",
     val title: String = "",
     val selectedCategory: TransactionCategory? = null,
+    val selectedEmoji: String = "📦",
     // Stored as LocalDate? — formatted to ISO-8601 when saving
     val date: LocalDate? = null,
     val isExpense: Boolean = true,
-    val showCategoryPicker: Boolean = false
+    val showCategoryPicker: Boolean = false,
+    val showEmojiPicker: Boolean = false
 )
 
 // ---------------------------------------------------------------------------
@@ -138,13 +191,16 @@ fun AddTransactionScreen(
         mutableStateOf(AddTransactionUiState(selectedCategory = categories.first()))
     }
 
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val categorySheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val emojiSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
     val submitState by viewModel.submitState.collectAsState()
 
     LaunchedEffect(submitState.success) {
         if (submitState.success) {
-            navController.popBackStack()
+            navController.previousBackStackEntry?.savedStateHandle?.set("refresh", true)
+            viewModel.consumeSuccess()
+            navController.navigateUp()
         }
     }
 
@@ -152,16 +208,32 @@ fun AddTransactionScreen(
     if (uiState.showCategoryPicker) {
         CategoryPickerBottomSheet(
             categories = categories,
-            sheetState = sheetState,
+            sheetState = categorySheetState,
             onCategorySelected = { category ->
                 uiState = uiState.copy(
                     selectedCategory = category,
+                    selectedEmoji = category.emoji,
                     showCategoryPicker = false
                 )
             },
             onDismiss = {
-                scope.launch { sheetState.hide() }.invokeOnCompletion {
+                scope.launch { categorySheetState.hide() }.invokeOnCompletion {
                     uiState = uiState.copy(showCategoryPicker = false)
+                }
+            }
+        )
+    }
+
+    // Emoji picker bottom sheet
+    if (uiState.showEmojiPicker) {
+        EmojiPickerBottomSheet(
+            sheetState = emojiSheetState,
+            onEmojiSelected = { emoji ->
+                uiState = uiState.copy(selectedEmoji = emoji, showEmojiPicker = false)
+            },
+            onDismiss = {
+                scope.launch { emojiSheetState.hide() }.invokeOnCompletion {
+                    uiState = uiState.copy(showEmojiPicker = false)
                 }
             }
         )
@@ -296,15 +368,48 @@ fun AddTransactionScreen(
             VSpacer(Spacing.s8)
 
             // ----------------------------------------------------------------
-            // Title field
+            // Title field + Emoji picker button side by side
             // ----------------------------------------------------------------
-            AppTextField(
-                value = uiState.title,
-                onValueChange = { uiState = uiState.copy(title = it) },
-                label = stringResource(Res.string.transaction_title_label),
-                placeholder = stringResource(Res.string.transaction_title_hint),
-                modifier = Modifier.fillMaxWidth()
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Spacing.s3)
+            ) {
+                // Emoji badge — tap to open emoji picker
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Emoji",
+                        style = BodyNormal().copy(fontWeight = FontWeight.Medium),
+                        color = palette.textPrimary.copy(alpha = 0.9f),
+                        modifier = Modifier.padding(bottom = Spacing.s2)
+                    )
+                    Box(
+                        modifier = Modifier
+                            .size(Spacing.s14)
+                            .clip(RoundedCornerShape(Spacing.s3))
+                            .background(palette.surface)
+                            .clickable { uiState = uiState.copy(showEmojiPicker = true) },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = uiState.selectedEmoji,
+                            style = TextStyle(fontSize = 28.sp),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+
+                // Title field takes remaining space
+                AppTextField(
+                    value = uiState.title,
+                    onValueChange = { uiState = uiState.copy(title = it) },
+                    label = stringResource(Res.string.transaction_title_label),
+                    placeholder = stringResource(Res.string.transaction_title_hint),
+                    modifier = Modifier.weight(1f)
+                )
+            }
 
             VSpacer(Spacing.s4)
 
@@ -332,7 +437,6 @@ fun AddTransactionScreen(
                         Row(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            // Emoji badge
                             Box(
                                 modifier = Modifier
                                     .size(Spacing.s10)
@@ -341,7 +445,7 @@ fun AddTransactionScreen(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = uiState.selectedCategory?.emoji ?: "📦",
+                                    text = uiState.selectedEmoji,
                                     style = H4TextStyle()
                                 )
                             }
@@ -402,7 +506,7 @@ fun AddTransactionScreen(
                         amount = uiState.amount,
                         title = uiState.title,
                         category = uiState.selectedCategory?.id ?: "other",
-                        emoji = uiState.selectedCategory?.emoji ?: "📦",
+                        emoji = uiState.selectedEmoji.ifBlank { "📦" },
                         date = isoDate
                     )
                 },
@@ -437,6 +541,79 @@ private fun SegmentButton(label: String, isSelected: Boolean, onClick: () -> Uni
             style = BodyNormal().copy(fontWeight = FontWeight.SemiBold),
             color = textColor
         )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun EmojiPickerBottomSheet(
+    sheetState: SheetState,
+    onEmojiSelected: (String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val palette = LocalAppPalette.current
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = palette.surface,
+        modifier = Modifier.navigationBarsPadding()
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Text(
+                text = "Pick an Emoji",
+                style = H6TextStyle().copy(fontWeight = FontWeight.SemiBold),
+                color = palette.textPrimary,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = Spacing.s4)
+                    .padding(bottom = Spacing.s3),
+                textAlign = TextAlign.Center
+            )
+
+            // Fixed height grid so the sheet has a predictable size
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(8),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(380.dp)
+                    .padding(horizontal = Spacing.s3),
+                verticalArrangement = Arrangement.spacedBy(Spacing.s1),
+                horizontalArrangement = Arrangement.spacedBy(Spacing.s1)
+            ) {
+                emojiSections.forEach { section ->
+                    // Section header spans the full grid width
+                    item(span = { GridItemSpan(8) }) {
+                        Text(
+                            text = section.label,
+                            style = BodySmall().copy(fontWeight = FontWeight.SemiBold),
+                            color = palette.textSecondary,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = Spacing.s2)
+                        )
+                    }
+                    items(section.emojis) { emoji ->
+                        Box(
+                            modifier = Modifier
+                                .aspectRatio(1f)
+                                .clip(RoundedCornerShape(Spacing.s2))
+                                .clickable { onEmojiSelected(emoji) }
+                                .background(palette.background),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = emoji,
+                                style = TextStyle(fontSize = 22.sp),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+                }
+            }
+
+            VSpacer(Spacing.s4)
+        }
     }
 }
 

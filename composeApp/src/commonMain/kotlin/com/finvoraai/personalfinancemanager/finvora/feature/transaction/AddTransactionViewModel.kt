@@ -79,4 +79,8 @@ class AddTransactionViewModel(
     fun consumeError() {
         _submitState.value = _submitState.value.copy(error = null)
     }
+
+    fun consumeSuccess() {
+        _submitState.value = _submitState.value.copy(success = false)
+    }
 }

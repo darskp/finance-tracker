@@ -50,6 +50,14 @@ fun HomeScreen(
         }
     }
 
+    val shouldRefresh = navController.currentBackStackEntry?.savedStateHandle?.get<Boolean>("refresh") ?: false
+    LaunchedEffect(shouldRefresh) {
+        if (shouldRefresh) {
+            viewModel.refresh()
+            navController.currentBackStackEntry?.savedStateHandle?.set("refresh", false)
+        }
+    }
+
     val appBarColor by animateColorAsState(
         targetValue = if (isScrolled) {
             palette.surface
