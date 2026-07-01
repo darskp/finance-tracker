@@ -359,18 +359,7 @@ fun HomePageContent(
                     }
                 }
 
-                // 4. Logout Button
-                item {
-                    VSpacer(Spacing.s3)
-                    FinvoraButton(
-                        text = stringResource(Res.string.auth_logout),
-                        onClick = { authViewModel.signOut() },
-                        style = ButtonStyle.SECONDARY,
-                        enabled = !isLoggingOut,
-                        modifier = Modifier.padding(horizontal = Spacing.s4)
-                    )
-                    VSpacer(Spacing.s3)
-                }
+
             }
         }
 
