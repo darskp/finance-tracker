@@ -19,6 +19,7 @@ import com.finvoraai.personalfinancemanager.finvora.feature.auth.AuthViewModel
 import com.finvoraai.personalfinancemanager.finvora.feature.home.components.HomePageContent
 import com.finvoraai.personalfinancemanager.finvora.ui.components.AppBackgroundScreen
 import com.finvoraai.personalfinancemanager.finvora.ui.components.HomeTopAppBar
+import com.finvoraai.personalfinancemanager.finvora.ui.navigation.NavRoute
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.LocalAppPalette
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.tokens.Motion
 import com.finvoraai.personalfinancemanager.finvora.ui.utils.collectAsStateLifecycleAware
@@ -81,6 +82,9 @@ fun HomeScreen(
                 HomeTopAppBar(
                     navController = navController,
                     backgroundColor = appBarColor,
+                    onAvatarClick = {
+                        navController.navigate(NavRoute.ProfileScreen)
+                    },
                     modifier = Modifier.align(Alignment.TopCenter)
                 )
             }

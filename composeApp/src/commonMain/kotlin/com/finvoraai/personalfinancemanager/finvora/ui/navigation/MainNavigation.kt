@@ -21,6 +21,7 @@ import com.finvoraai.personalfinancemanager.finvora.feature.chat.ChatScreen
 import com.finvoraai.personalfinancemanager.finvora.feature.home.HomeScreen
 import com.finvoraai.personalfinancemanager.finvora.feature.transactions.AllTransactionsScreen
 import com.finvoraai.personalfinancemanager.finvora.feature.main.MainViewModel
+import com.finvoraai.personalfinancemanager.finvora.feature.profile.ProfileScreen
 import com.finvoraai.personalfinancemanager.finvora.feature.transaction.AddTransactionScreen
 import com.finvoraai.personalfinancemanager.finvora.ui.components.SimpleBottomNavigation
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.Spacing
@@ -87,6 +88,13 @@ fun MainNavigation(
                 composable<NavRoute.AllTransactionsScreen> {
                     AllTransactionsScreen(
                         navController = navController
+                    )
+                }
+
+                composable<NavRoute.ProfileScreen> {
+                    ProfileScreen(
+                        navController = navController,
+                        onNavigateToAuth = onNavigateToAuth
                     )
                 }
             }

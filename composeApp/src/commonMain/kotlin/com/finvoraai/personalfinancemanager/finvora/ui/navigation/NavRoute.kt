@@ -34,6 +34,9 @@ sealed class NavRoute {
 
     @Serializable
     data object AllTransactionsScreen : NavRoute()
+
+    @Serializable
+    data object ProfileScreen : NavRoute()
 }
 
 /**
