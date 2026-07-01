@@ -674,28 +674,14 @@ private fun CategoryPickerRow(category: TransactionCategory, onClick: () -> Unit
 
     AppCard(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(Spacing.s13)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(Spacing.s1),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(Spacing.s3)
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            // Emoji badge
-            Box(
-                modifier = Modifier
-                    .size(Spacing.s10)
-                    .clip(RoundedCornerShape(Spacing.s2))
-                    .background(palette.primary.copy(alpha = 0.12f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = category.emoji,
-                    style = H4TextStyle()
-                )
-            }
             Text(
                 text = stringResource(category.labelResId),
                 style = BodyNormal().copy(fontWeight = FontWeight.Medium),
