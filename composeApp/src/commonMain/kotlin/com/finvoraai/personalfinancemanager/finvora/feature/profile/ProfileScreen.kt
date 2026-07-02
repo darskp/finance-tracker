@@ -85,23 +85,23 @@ fun ProfileScreen(
                         .background(palette.surface),
                     contentAlignment = Alignment.Center
                 ) {
-                    Image(
+                    Icon(
                         painter = painterResource(Res.drawable.ic_avatar_placeholder),
                         contentDescription = "Profile Picture",
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
+                        tint = palette.textSecondary,
+                        modifier = Modifier.fillMaxSize().padding(Spacing.s4)
                     )
                 }
                 
                 VSpacer(Spacing.s3)
                 Text(
-                    text = stringResource(Res.string.profile_dummy_name),
+                    text = uiState.name ?: stringResource(Res.string.profile_dummy_name),
                     style = H5TextStyle().copy(fontWeight = FontWeight.Bold),
                     color = palette.textPrimary
                 )
                 VSpacer(Spacing.s1)
                 Text(
-                    text = stringResource(Res.string.profile_dummy_email),
+                    text = uiState.email ?: stringResource(Res.string.profile_dummy_email),
                     style = BodyNormal(),
                     color = palette.textSecondary
                 )
