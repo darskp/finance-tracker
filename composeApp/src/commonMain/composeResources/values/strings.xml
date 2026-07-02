@@ -241,4 +241,18 @@
     <string name="chat_guide_ex_check_3">What is my current balance?</string>
     <string name="chat_guide_ex_check_4">Find all expenses on food</string>
     <string name="chat_guide_ex_check_5">Analyze my spending patterns</string>
+
+    <!-- Profile Screen -->
+    <string name="profile_title">Profile</string>
+    <string name="profile_dummy_name">Alexander Sterling</string>
+    <string name="profile_dummy_email">@asterling.ai</string>
+    <string name="profile_section_account_security">ACCOUNT &amp; SECURITY</string>
+    <string name="profile_section_preferences">PREFERENCES</string>
+    <string name="profile_item_personal_info">Personal Information</string>
+    <string name="profile_item_privacy_security">Privacy &amp; Security</string>
+    <string name="profile_item_notifications">Notifications</string>
+    <string name="profile_item_language_region">Language &amp; Region</string>
+    <string name="profile_item_theme">Theme</string>
+    <string name="profile_item_language_value">English (US)</string>
+    <string name="profile_version">Version 2.4.1 (Build 108)</string>
 </resources>
