@@ -97,20 +97,19 @@ import org.koin.compose.viewmodel.koinViewModel
 
 data class TransactionCategory(
     val id: String,
-    val emoji: String,
     val labelResId: org.jetbrains.compose.resources.StringResource
 )
 
 // Mocked locally; swap this list for an API result when backend is ready.
 // Res.string.* references are plain StringResource objects — no @Composable needed here.
 val defaultCategories: List<TransactionCategory> = listOf(
-    TransactionCategory("shopping", "🛒", Res.string.category_shopping),
-    TransactionCategory("food", "🍔", Res.string.category_food),
-    TransactionCategory("transport", "🚕", Res.string.category_transport),
-    TransactionCategory("health", "💊", Res.string.category_health),
-    TransactionCategory("bills", "🧾", Res.string.category_bills),
-    TransactionCategory("income", "💰", Res.string.category_income),
-    TransactionCategory("other", "📦", Res.string.category_other)
+    TransactionCategory("shopping", Res.string.category_shopping),
+    TransactionCategory("food", Res.string.category_food),
+    TransactionCategory("transport", Res.string.category_transport),
+    TransactionCategory("health", Res.string.category_health),
+    TransactionCategory("bills", Res.string.category_bills),
+    TransactionCategory("income", Res.string.category_income),
+    TransactionCategory("other", Res.string.category_other)
 )
 
 data class EmojiSection(val label: String, val emojis: List<String>)
@@ -212,7 +211,6 @@ fun AddTransactionScreen(
             onCategorySelected = { category ->
                 uiState = uiState.copy(
                     selectedCategory = category,
-                    selectedEmoji = category.emoji,
                     showCategoryPicker = false
                 )
             },

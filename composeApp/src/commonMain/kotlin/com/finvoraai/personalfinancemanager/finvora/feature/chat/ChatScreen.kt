@@ -67,42 +67,8 @@ import com.finvoraai.personalfinancemanager.finvora.ui.theme.Spacing
 import com.finvoraai.personalfinancemanager.finvora.ui.uiutils.formatChatDateLabel
 import com.finvoraai.personalfinancemanager.finvora.ui.uiutils.formatChatTime
 import com.finvoraai.personalfinancemanager.finvora.ui.utils.collectAsStateLifecycleAware
-import finvoraai.composeapp.generated.resources.Res
-import finvoraai.composeapp.generated.resources.cd_back
-import finvoraai.composeapp.generated.resources.chat_action_amount_label
-import finvoraai.composeapp.generated.resources.chat_action_auto_mapped_label
-import finvoraai.composeapp.generated.resources.chat_action_cancelled_label
-import finvoraai.composeapp.generated.resources.chat_action_category_label
-import finvoraai.composeapp.generated.resources.chat_action_date_label
-import finvoraai.composeapp.generated.resources.chat_action_expired_label
-import finvoraai.composeapp.generated.resources.chat_action_editing
-import finvoraai.composeapp.generated.resources.chat_action_edit
-import finvoraai.composeapp.generated.resources.chat_action_save_edits
-import finvoraai.composeapp.generated.resources.chat_action_expense_badge
-import finvoraai.composeapp.generated.resources.chat_action_income_badge
-import finvoraai.composeapp.generated.resources.chat_action_review_label
-import finvoraai.composeapp.generated.resources.chat_action_saved
-import finvoraai.composeapp.generated.resources.chat_action_success_label
-import finvoraai.composeapp.generated.resources.chat_action_superseded_label
-import finvoraai.composeapp.generated.resources.chat_bot_cd
-import finvoraai.composeapp.generated.resources.chat_cancel_btn
-import finvoraai.composeapp.generated.resources.chat_confirm_btn
-import finvoraai.composeapp.generated.resources.chat_draft_updated_label
-import finvoraai.composeapp.generated.resources.chat_header_model
-import finvoraai.composeapp.generated.resources.chat_input_placeholder
-import finvoraai.composeapp.generated.resources.chat_loading_history
-import finvoraai.composeapp.generated.resources.chat_model_active_label
-import finvoraai.composeapp.generated.resources.chat_processing_status
-import finvoraai.composeapp.generated.resources.chat_send_cd
-import finvoraai.composeapp.generated.resources.chat_typing_indicator
-import finvoraai.composeapp.generated.resources.ic_arrow_back
-import finvoraai.composeapp.generated.resources.ic_arrow_forward
-import finvoraai.composeapp.generated.resources.ic_arrow_up_right
-import finvoraai.composeapp.generated.resources.ic_chat
-import finvoraai.composeapp.generated.resources.ic_bot
-import finvoraai.composeapp.generated.resources.ic_info
-import finvoraai.composeapp.generated.resources.chat_input_placeholder_pending
 import finvoraai.composeapp.generated.resources.*
+
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -728,6 +694,7 @@ private fun DraftCard(
                             modifier = Modifier
                                 .weight(1f)
                                 .clip(RoundedCornerShape(Spacing.s3))
+                                .background(palette.surfaceVariant)
                                 .border(Spacing.hairline, palette.outline.copy(alpha = 0.4f), RoundedCornerShape(Spacing.s3))
                                 .clickable { isEditing = true }
                                 .padding(vertical = Spacing.s3),
@@ -744,6 +711,8 @@ private fun DraftCard(
                             modifier = Modifier
                                 .weight(1f)
                                 .clip(RoundedCornerShape(Spacing.s3))
+                                .background(palette.error.copy(alpha = 0.1f))
+                                .border(Spacing.hairline, palette.error.copy(alpha = 0.25f), RoundedCornerShape(Spacing.s3))
                                 .clickable { onCancel(msgIndex, action) }
                                 .padding(vertical = Spacing.s3),
                             contentAlignment = Alignment.Center
@@ -751,7 +720,7 @@ private fun DraftCard(
                             Text(
                                 text = stringResource(Res.string.chat_cancel_btn),
                                 style = BodySmall().copy(fontWeight = FontWeight.SemiBold),
-                                color = palette.error.copy(alpha = 0.8f)
+                                color = palette.error
                             )
                         }
                     }
@@ -927,21 +896,27 @@ private fun ChatInputBar(
         }
 
         // Send button
+        val sendEnabled = value.isNotBlank() && !isLoading
         Box(
             modifier = Modifier
                 .size(Spacing.s13)
                 .clip(RoundedCornerShape(Spacing.s3))
-                .background(if (value.isNotBlank() && !isLoading) palette.primary else palette.outline.copy(alpha = 0.3f))
+                .background(if (sendEnabled) palette.primary else palette.surfaceVariant)
+                .border(
+                    width = Spacing.hairline,
+                    color = palette.outline.copy(alpha = 0.4f),
+                    shape = RoundedCornerShape(Spacing.s3)
+                )
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,
-                    enabled = value.isNotBlank() && !isLoading
+                    enabled = sendEnabled
                 ) { onSend() },
             contentAlignment = Alignment.Center
         ) {
             if (isLoading) {
                 CircularProgressIndicator(
-                    color = palette.onPrimary,
+                    color = palette.textSecondary,
                     modifier = Modifier.size(Spacing.s5),
                     strokeWidth = Spacing.sHalf
                 )
@@ -949,7 +924,7 @@ private fun ChatInputBar(
                 Icon(
                     painter = painterResource(Res.drawable.ic_arrow_forward),
                     contentDescription = stringResource(Res.string.chat_send_cd),
-                    tint = palette.onPrimary,
+                    tint = if (sendEnabled) palette.onPrimary else palette.textTertiary,
                     modifier = Modifier.size(Spacing.s5)
                 )
             }
