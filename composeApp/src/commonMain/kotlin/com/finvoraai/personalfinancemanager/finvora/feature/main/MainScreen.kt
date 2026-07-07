@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -44,6 +45,10 @@ fun MainScreen(
 
     var lockedDestination by remember { mutableStateOf<String?>(null) }
     var initialRoute by remember { mutableStateOf<NavRoute?>(null) }
+    // Timestamp of the last time we navigated to Main (login). Used to suppress
+    // the transient Onboarding flip that Clerk emits right after a session is created.
+    var lastLoginTimestampMs by remember { mutableLongStateOf(0L) }
+    val LOGIN_DEBOUNCE_MS = 2_000L
 
     LaunchedEffect(Unit) {
         SessionManager.init {
@@ -63,7 +68,14 @@ fun MainScreen(
             is StartupDestination.Onboarding -> {
                 val targetRoute = destination.initialRoute
                 DebugLogger.navigation(KEY_STATE, "Onboarding - Target: $targetRoute")
-                if (lockedDestination == null) {
+                // Suppress transient Onboarding flip that Clerk emits right after login
+                val msSinceLogin = System.currentTimeMillis() - lastLoginTimestampMs
+                if (msSinceLogin < LOGIN_DEBOUNCE_MS) {
+                    DebugLogger.navigation(
+                        KEY_TRANSITION,
+                        "Onboarding suppressed — within ${LOGIN_DEBOUNCE_MS}ms of login (msSinceLogin=$msSinceLogin)"
+                    )
+                } else if (lockedDestination == null) {
                     // Cold start: set initial destination
                     lockedDestination = RootNavGraph.Onboarding.route
                     initialRoute = targetRoute
@@ -89,6 +101,7 @@ fun MainScreen(
             }
             is StartupDestination.Main -> {
                 DebugLogger.navigation(KEY_STATE, "Main - Authenticated Graph")
+                lastLoginTimestampMs = System.currentTimeMillis()
                 if (lockedDestination == null) {
                     // Cold start: set initial destination
                     lockedDestination = RootNavGraph.Main.route

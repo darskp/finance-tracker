@@ -37,12 +37,20 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -461,6 +469,7 @@ private fun AssistantMessageBubble(
 // Draft Card (Pending Action Confirmation)
 // ---------------------------------------------------------------------------
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun DraftCard(
     action: PendingActionUi,
@@ -485,6 +494,46 @@ private fun DraftCard(
     var isEditing by remember(action.pendingId) { mutableStateOf(false) }
     var editedTitle by remember(action.pendingId) { mutableStateOf(action.title) }
     var editedAmount by remember(action.pendingId) { mutableStateOf(action.amount?.toString() ?: "") }
+    var editedEmoji by remember(action.pendingId) { mutableStateOf(action.emoji ?: "✨") }
+    var editedCategory by remember(action.pendingId) { mutableStateOf(action.category ?: (if (isExpense) "otherExpense" else "otherIncome")) }
+    var editedDate by remember(action.pendingId) { mutableStateOf(action.date) }
+    
+    var categoryDropdownExpanded by remember { mutableStateOf(false) }
+    var showDatePicker by remember { mutableStateOf(false) }
+
+    val incomeCategories = remember { listOf("business", "freelance", "salary", "investment", "rentalIncome", "otherIncome") }
+    val expenseCategories = remember { listOf("food", "rent", "utilities", "entertainment", "transportation", "shopping", "healthcare", "otherExpense") }
+    val activeCategories = if (isExpense) expenseCategories else incomeCategories
+
+    if (showDatePicker) {
+        val initialMillis = remember(editedDate) {
+            try {
+                editedDate?.let { Instant.parse(it).toEpochMilliseconds() }
+            } catch (e: Exception) { null } ?: Clock.System.now().toEpochMilliseconds()
+        }
+        val datePickerState = rememberDatePickerState(initialSelectedDateMillis = initialMillis)
+        
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let { millis ->
+                        editedDate = Instant.fromEpochMilliseconds(millis).toString()
+                    }
+                    showDatePicker = false
+                }) {
+                    Text("OK", color = palette.primary)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Cancel", color = palette.textSecondary)
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
 
     val cardAlpha = if (isExpired || (isResolved && !isConfirmed)) 0.55f else 1f
 
@@ -546,8 +595,22 @@ private fun DraftCard(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(Spacing.s2)
             ) {
-                Text(text = action.emoji ?: "✨", style = H6TextStyle())
-                Column {
+                if (isEditing) {
+                    BasicTextField(
+                        value = editedEmoji.take(2),
+                        onValueChange = { editedEmoji = it.take(2) },
+                        textStyle = H6TextStyle().copy(textAlign = TextAlign.Center),
+                        modifier = Modifier
+                            .width(Spacing.s10)
+                            .clip(RoundedCornerShape(Spacing.s2))
+                            .background(palette.surfaceVariant)
+                            .padding(vertical = Spacing.s2)
+                    )
+                } else {
+                    Text(text = action.emoji ?: "✨", style = H6TextStyle())
+                }
+
+                Column(modifier = Modifier.weight(1f)) {
                     if (isEditing) {
                         BasicTextField(
                             value = editedTitle,
@@ -573,6 +636,48 @@ private fun DraftCard(
                             style = BodyXSmall(),
                             color = palette.primary
                         )
+                    }
+                }
+            }
+
+            // Category Row (Only in Edit Mode)
+            if (isEditing) {
+                Column {
+                    Text(
+                        text = "Category",
+                        style = BodyXSmall().copy(fontWeight = FontWeight.Bold),
+                        color = palette.textTertiary,
+                        modifier = Modifier.padding(bottom = Spacing.s1)
+                    )
+                    Box {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(Spacing.s2))
+                                .background(palette.surfaceVariant)
+                                .clickable { categoryDropdownExpanded = true }
+                                .padding(horizontal = Spacing.s3, vertical = Spacing.s2)
+                        ) {
+                            Text(
+                                text = editedCategory.replaceFirstChar { it.uppercase() },
+                                style = BodySmall().copy(fontWeight = FontWeight.SemiBold),
+                                color = palette.textPrimary
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = categoryDropdownExpanded,
+                            onDismissRequest = { categoryDropdownExpanded = false }
+                        ) {
+                            activeCategories.forEach { cat ->
+                                DropdownMenuItem(
+                                    text = { Text(cat.replaceFirstChar { it.uppercase() }) },
+                                    onClick = {
+                                        editedCategory = cat
+                                        categoryDropdownExpanded = false
+                                    }
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -620,11 +725,27 @@ private fun DraftCard(
                         color = palette.textTertiary
                     )
                     Spacer(modifier = Modifier.height(Spacing.sHalf))
-                    Text(
-                        text = action.date?.take(10) ?: "Today",
-                        style = BodySmall().copy(fontWeight = FontWeight.SemiBold),
-                        color = palette.textSecondary
-                    )
+                    if (isEditing) {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(Spacing.s2))
+                                .background(palette.surface)
+                                .clickable { showDatePicker = true }
+                                .padding(horizontal = Spacing.s2, vertical = Spacing.s1)
+                        ) {
+                            Text(
+                                text = editedDate?.take(10) ?: "Today",
+                                style = BodySmall().copy(fontWeight = FontWeight.Bold),
+                                color = palette.textSecondary
+                            )
+                        }
+                    } else {
+                        Text(
+                            text = action.date?.take(10) ?: "Today",
+                            style = BodySmall().copy(fontWeight = FontWeight.SemiBold),
+                            color = palette.textSecondary
+                        )
+                    }
                 }
             }
 
@@ -640,7 +761,13 @@ private fun DraftCard(
                                 .background(palette.primary)
                                 .clickable {
                                     val updatedAmount = editedAmount.toDoubleOrNull() ?: action.amount
-                                    val updated = action.copy(title = editedTitle, amount = updatedAmount)
+                                    val updated = action.copy(
+                                        title = editedTitle, 
+                                        amount = updatedAmount,
+                                        category = editedCategory,
+                                        date = editedDate,
+                                        emoji = editedEmoji
+                                    )
                                     onUpdateAction(msgIndex, paIndex, updated)
                                     isEditing = false
                                 }
@@ -661,6 +788,9 @@ private fun DraftCard(
                                 .clickable {
                                     editedTitle = action.title
                                     editedAmount = action.amount?.toString() ?: ""
+                                    editedEmoji = action.emoji ?: "✨"
+                                    editedCategory = action.category ?: (if (isExpense) "otherExpense" else "otherIncome")
+                                    editedDate = action.date
                                     isEditing = false
                                 }
                                 .padding(vertical = Spacing.s3),

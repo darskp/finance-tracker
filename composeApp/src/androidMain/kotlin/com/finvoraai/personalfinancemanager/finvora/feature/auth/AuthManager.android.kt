@@ -217,15 +217,17 @@ actual class AuthManager actual constructor() {
 
     actual suspend fun getToken(): String? {
         return try {
-            // Retry up to 5 times with short delay to wait for Clerk to load the JWT
+            // Retry up to 8 times with short delay to wait for Clerk to load the JWT.
+            // Using 100ms intervals (max 700ms wait) instead of 200ms (max 1000ms).
             var token: String? = null
-            for (i in 1..5) {
+            for (i in 1..8) {
                 Clerk.auth.getToken().onSuccess { token = it }
                 if (token != null) break
-                delay(200)
+                println("CLERK: getToken retry #$i...")
+                delay(100)
             }
             println("CLERK: <<< getToken ${if (token != null) "SUCCESS" else "null after retries"}")
-            DebugLogger.auth("getToken", if (token != null) "OK (${token.take(20)}...)" else "null after retries")
+            DebugLogger.auth("getToken", if (token != null) "OK (${token!!.take(20)}...)" else "null after retries")
             token
         } catch (e: Exception) {
             println("CLERK: <<< getToken FAILED: ${e.message}")

@@ -42,6 +42,9 @@ val appModule = module {
             coerceInputValues = true
             allowComments = true
             isLenient = true
+            // Omit null fields from JSON output — prevents sending "data":null
+            // in cancel payloads which some backends reject
+            explicitNulls = false
         }
     }
 

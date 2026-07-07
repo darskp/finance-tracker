@@ -128,7 +128,7 @@ class ChatViewModel(
                             ChatMessage(
                                 role = dto.role,
                                 content = dto.content,
-                                timestamp = parseIsoToMillis(dto.createdAt),
+                                timestamp = parseIsoToMillis(dto.createdAt ?: ""),
                                 pendingActions = dto.pendingActions?.map { pa ->
                                     PendingActionUi(
                                         type = pa.type,

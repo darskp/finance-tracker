@@ -14,7 +14,7 @@ data class ChatMessageDto(
     val role: String,
     val content: String,
     // Keep as string for parsing ISO 8601
-    val createdAt: String,
+    val createdAt: String? = null,
     val pendingActions: List<PendingActionDto>? = null,
     val resolvedStatus: Map<String, String>? = null
 )

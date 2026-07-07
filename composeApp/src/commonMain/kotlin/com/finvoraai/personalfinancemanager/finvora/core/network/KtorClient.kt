@@ -42,9 +42,22 @@ fun createHttpClient(authManager: AuthManager, json: Json): HttpClient {
                     val token = authManager.getToken()
                     if (token != null) {
                         DebugLogger.network("Auth", "Bearer token attached (${token.take(20)}...)")
-                        BearerTokens(token, "")
+                        BearerTokens(accessToken = token, refreshToken = token)
                     } else {
                         DebugLogger.network("Auth", "no token available")
+                        null
+                    }
+                }
+                refreshTokens {
+                    // Called by Ktor when a 401 is received — Clerk auto-refreshes the
+                    // session in the background, so calling getToken() here gets a fresh JWT
+                    // without forcing the user to log in again.
+                    val freshToken = authManager.getToken()
+                    if (freshToken != null) {
+                        DebugLogger.network("Auth", "Token refreshed (${freshToken.take(20)}...)")
+                        BearerTokens(accessToken = freshToken, refreshToken = freshToken)
+                    } else {
+                        DebugLogger.network("Auth", "Token refresh failed — no token")
                         null
                     }
                 }
