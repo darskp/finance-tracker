@@ -18,6 +18,14 @@ import androidx.compose.ui.unit.dp
 import finvoraai.composeapp.generated.resources.Res
 import finvoraai.composeapp.generated.resources.finvoraai_logo_no_text
 import org.jetbrains.compose.resources.painterResource
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.layout.offset
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.unit.IntOffset
+import kotlin.math.roundToInt
 
 private val BUTTON_SIZE = 38.dp
 private val LOGO_SIZE = 24.dp
@@ -36,8 +44,19 @@ fun DebugFloatingButton(modifier: Modifier = Modifier) {
 
     val isOverlayVisible by DebugController.isVisible.collectAsState()
 
+    var offsetX by remember { mutableStateOf(0f) }
+    var offsetY by remember { mutableStateOf(0f) }
+
     Box(
         modifier = modifier
+            .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
+            .pointerInput(Unit) {
+                detectDragGestures { change, dragAmount ->
+                    change.consume()
+                    offsetX += dragAmount.x
+                    offsetY += dragAmount.y
+                }
+            }
             .size(BUTTON_SIZE)
             .clip(CircleShape)
             .background(
