@@ -65,6 +65,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.NavController
 import com.finvoraai.personalfinancemanager.finvora.ui.components.AppBackgroundScreen
+import com.finvoraai.personalfinancemanager.finvora.ui.components.CategoryPickerBottomSheet
+import com.finvoraai.personalfinancemanager.finvora.ui.components.EmojiPickerBottomSheet
+import com.finvoraai.personalfinancemanager.finvora.ui.components.defaultCategories
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.BodyNormal
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.BodySmall
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.BodyXSmall
@@ -76,6 +79,8 @@ import com.finvoraai.personalfinancemanager.finvora.ui.uiutils.formatChatDateLab
 import com.finvoraai.personalfinancemanager.finvora.ui.uiutils.formatChatTime
 import com.finvoraai.personalfinancemanager.finvora.ui.utils.collectAsStateLifecycleAware
 import finvoraai.composeapp.generated.resources.*
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
 
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -495,15 +500,22 @@ private fun DraftCard(
     var editedTitle by remember(action.pendingId) { mutableStateOf(action.title) }
     var editedAmount by remember(action.pendingId) { mutableStateOf(action.amount?.toString() ?: "") }
     var editedEmoji by remember(action.pendingId) { mutableStateOf(action.emoji ?: "✨") }
-    var editedCategory by remember(action.pendingId) { mutableStateOf(action.category ?: (if (isExpense) "otherExpense" else "otherIncome")) }
+    var editedCategory by remember(action.pendingId) { mutableStateOf(action.category ?: (if (isExpense) "other" else "income")) }
     var editedDate by remember(action.pendingId) { mutableStateOf(action.date) }
     
-    var categoryDropdownExpanded by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
+    var showEmojiPicker by remember { mutableStateOf(false) }
+    var showCategoryPicker by remember { mutableStateOf(false) }
+    
+    val emojiSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val categorySheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val scope = rememberCoroutineScope()
 
-    val incomeCategories = remember { listOf("business", "freelance", "salary", "investment", "rentalIncome", "otherIncome") }
-    val expenseCategories = remember { listOf("food", "rent", "utilities", "entertainment", "transportation", "shopping", "healthcare", "otherExpense") }
-    val activeCategories = if (isExpense) expenseCategories else incomeCategories
+    LaunchedEffect(isExpired, isResolved) {
+        if (isExpired || isResolved) {
+            isEditing = false
+        }
+    }
 
     if (showDatePicker) {
         val initialMillis = remember(editedDate) {
@@ -533,6 +545,29 @@ private fun DraftCard(
         ) {
             DatePicker(state = datePickerState)
         }
+    }
+
+    if (showEmojiPicker) {
+        EmojiPickerBottomSheet(
+            sheetState = emojiSheetState,
+            onEmojiSelected = { emoji ->
+                editedEmoji = emoji
+                scope.launch { emojiSheetState.hide() }.invokeOnCompletion { showEmojiPicker = false }
+            },
+            onDismiss = { showEmojiPicker = false }
+        )
+    }
+
+    if (showCategoryPicker) {
+        CategoryPickerBottomSheet(
+            categories = defaultCategories,
+            sheetState = categorySheetState,
+            onCategorySelected = { category ->
+                editedCategory = category.id
+                scope.launch { categorySheetState.hide() }.invokeOnCompletion { showCategoryPicker = false }
+            },
+            onDismiss = { showCategoryPicker = false }
+        )
     }
 
     val cardAlpha = if (isExpired || (isResolved && !isConfirmed)) 0.55f else 1f
@@ -596,16 +631,17 @@ private fun DraftCard(
                 horizontalArrangement = Arrangement.spacedBy(Spacing.s2)
             ) {
                 if (isEditing) {
-                    BasicTextField(
-                        value = editedEmoji.take(2),
-                        onValueChange = { editedEmoji = it.take(2) },
-                        textStyle = H6TextStyle().copy(textAlign = TextAlign.Center),
+                    Box(
                         modifier = Modifier
                             .width(Spacing.s10)
                             .clip(RoundedCornerShape(Spacing.s2))
                             .background(palette.surfaceVariant)
-                            .padding(vertical = Spacing.s2)
-                    )
+                            .clickable { showEmojiPicker = true }
+                            .padding(vertical = Spacing.s2),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = editedEmoji.take(2), style = H6TextStyle().copy(textAlign = TextAlign.Center))
+                    }
                 } else {
                     Text(text = action.emoji ?: "✨", style = H6TextStyle())
                 }
@@ -649,35 +685,20 @@ private fun DraftCard(
                         color = palette.textTertiary,
                         modifier = Modifier.padding(bottom = Spacing.s1)
                     )
-                    Box {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(Spacing.s2))
-                                .background(palette.surfaceVariant)
-                                .clickable { categoryDropdownExpanded = true }
-                                .padding(horizontal = Spacing.s3, vertical = Spacing.s2)
-                        ) {
-                            Text(
-                                text = editedCategory.replaceFirstChar { it.uppercase() },
-                                style = BodySmall().copy(fontWeight = FontWeight.SemiBold),
-                                color = palette.textPrimary
-                            )
-                        }
-                        DropdownMenu(
-                            expanded = categoryDropdownExpanded,
-                            onDismissRequest = { categoryDropdownExpanded = false }
-                        ) {
-                            activeCategories.forEach { cat ->
-                                DropdownMenuItem(
-                                    text = { Text(cat.replaceFirstChar { it.uppercase() }) },
-                                    onClick = {
-                                        editedCategory = cat
-                                        categoryDropdownExpanded = false
-                                    }
-                                )
-                            }
-                        }
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(Spacing.s2))
+                            .background(palette.surfaceVariant)
+                            .clickable { showCategoryPicker = true }
+                            .padding(horizontal = Spacing.s3, vertical = Spacing.s2)
+                    ) {
+                        val categoryName = defaultCategories.find { it.id == editedCategory }?.labelResId?.let { stringResource(it) } ?: editedCategory.replaceFirstChar { it.uppercase() }
+                        Text(
+                            text = categoryName,
+                            style = BodySmall().copy(fontWeight = FontWeight.SemiBold),
+                            color = palette.textPrimary
+                        )
                     }
                 }
             }
