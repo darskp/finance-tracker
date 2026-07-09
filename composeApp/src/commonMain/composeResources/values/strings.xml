@@ -49,6 +49,10 @@
     <string name="dashboard_tx_shell_value">-$65.00</string>
     <string name="cd_avatar">User profile picture</string>
 
+    <!-- All Transactions Screen -->
+    <string name="all_transactions_title">Transactions</string>
+    <string name="all_transactions_empty">No transactions yet.</string>
+
     <!-- Welcome Screen -->
     <string name="welcome_version_badge">VERSION 2.0 NOW LIVE</string>
     <string name="welcome_heading_start">Welcome to </string>

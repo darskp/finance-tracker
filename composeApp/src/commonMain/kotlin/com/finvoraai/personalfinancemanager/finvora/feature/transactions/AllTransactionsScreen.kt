@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -44,6 +45,8 @@ import com.finvoraai.personalfinancemanager.finvora.ui.utils.collectAsStateLifec
 import finvoraai.composeapp.generated.resources.Res
 import finvoraai.composeapp.generated.resources.cd_back
 import finvoraai.composeapp.generated.resources.ic_arrow_back
+import finvoraai.composeapp.generated.resources.all_transactions_title
+import finvoraai.composeapp.generated.resources.all_transactions_empty
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -88,7 +91,7 @@ fun AllTransactionsScreen(
                 }
                 HSpacer(Spacing.s2)
                 Text(
-                    text = "Transactions",
+                    text = stringResource(Res.string.all_transactions_title),
                     style = H6TextStyle().copy(fontWeight = FontWeight.Black),
                     color = palette.textPrimary
                 )
@@ -96,14 +99,17 @@ fun AllTransactionsScreen(
 
             // Body
             if (uiState.isLoading && uiState.transactions.isEmpty()) {
-                Box(
+                LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
+                    contentPadding = PaddingValues(
+                        horizontal = Spacing.s4,
+                        vertical = Spacing.s3
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(Spacing.sHalf)
                 ) {
-                    CircularProgressIndicator(
-                        color = palette.primary,
-                        strokeWidth = Spacing.sHalf
-                    )
+                    items(6) {
+                        TransactionRowSkeleton()
+                    }
                 }
             } else if (uiState.transactions.isEmpty()) {
                 Box(
@@ -111,7 +117,7 @@ fun AllTransactionsScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "No transactions yet.",
+                        text = stringResource(Res.string.all_transactions_empty),
                         style = BodyNormal(),
                         color = palette.textSecondary
                     )
@@ -212,6 +218,87 @@ private fun AllTransactionRow(
                 text = amount,
                 style = BodyNormal().copy(fontWeight = FontWeight.Bold),
                 color = if (isIncome) palette.success else palette.error
+            )
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Skeleton Row
+// ---------------------------------------------------------------------------
+
+@Composable
+private fun TransactionRowSkeleton() {
+    val palette = LocalAppPalette.current
+    
+    // Simple shimmer effect
+    val transition = androidx.compose.animation.core.rememberInfiniteTransition(label = "skeleton")
+    val alpha by transition.animateFloat(
+        initialValue = 0.3f, targetValue = 0.8f,
+        animationSpec = androidx.compose.animation.core.infiniteRepeatable(
+            animation = androidx.compose.animation.core.tween(1000),
+            repeatMode = androidx.compose.animation.core.RepeatMode.Reverse
+        ),
+        label = "alpha"
+    )
+
+    AppCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = Spacing.s1)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = Spacing.s3, vertical = Spacing.s1),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f)
+            ) {
+                // Emoji placeholder
+                Box(
+                    modifier = Modifier
+                        .size(Spacing.s8)
+                        .clip(RoundedCornerShape(Spacing.s2))
+                        .background(palette.surfaceVariant.copy(alpha = alpha))
+                )
+                HSpacer(Spacing.s3)
+                Column {
+                    // Title placeholder
+                    Box(
+                        modifier = Modifier
+                            .size(width = Spacing.s24, height = Spacing.s4)
+                            .clip(RoundedCornerShape(Spacing.s1))
+                            .background(palette.surfaceVariant.copy(alpha = alpha))
+                    )
+                    VSpacer(Spacing.s1)
+                    // Subtitle placeholder
+                    Box(
+                        modifier = Modifier
+                            .size(width = Spacing.s16, height = Spacing.s3)
+                            .clip(RoundedCornerShape(Spacing.s1))
+                            .background(palette.surfaceVariant.copy(alpha = alpha))
+                    )
+                    VSpacer(Spacing.s1)
+                    // Date placeholder
+                    Box(
+                        modifier = Modifier
+                            .size(width = Spacing.s14, height = Spacing.s3)
+                            .clip(RoundedCornerShape(Spacing.s1))
+                            .background(palette.surfaceVariant.copy(alpha = alpha))
+                    )
+                }
+            }
+
+            // Amount placeholder
+            Box(
+                modifier = Modifier
+                    .size(width = Spacing.s12, height = Spacing.s4)
+                    .clip(RoundedCornerShape(Spacing.s1))
+                    .background(palette.surfaceVariant.copy(alpha = alpha))
             )
         }
     }
