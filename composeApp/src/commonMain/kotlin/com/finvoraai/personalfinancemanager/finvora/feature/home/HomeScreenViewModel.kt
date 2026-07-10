@@ -39,7 +39,33 @@ class HomeScreenViewModel(
     private var loadJob: Job? = null
 
     init {
+        observeTransactions()
         loadTransactions()
+    }
+
+    private fun observeTransactions() {
+        viewModelScope.launch {
+            dashboardRepository.getTransactionsStream().collect { transactions ->
+                val income = transactions.filter { it.transactionType == TransactionType.Income }
+                    .sumOf { it.amount.toDoubleOrNull() ?: 0.0 }
+                val expense = transactions.filter { it.transactionType == TransactionType.Expense }
+                    .sumOf { it.amount.toDoubleOrNull() ?: 0.0 }
+                
+                val totalTx = income + expense
+                
+                // If we get data, stop the main loading spinner
+                val stopLoading = transactions.isNotEmpty()
+
+                _uiState.value = _uiState.value.copy(
+                    isLoading = if (stopLoading) false else _uiState.value.isLoading,
+                    transactions = transactions,
+                    totalIncome = income,
+                    totalExpense = expense,
+                    totalBalance = income - expense,
+                    totalTransaction = totalTx
+                )
+            }
+        }
     }
 
     private fun loadTransactions() {
@@ -49,30 +75,16 @@ class HomeScreenViewModel(
         }
         DebugLogger.network("ViewModel", "loadTransactions() started")
         loadJob = viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true)
-            when (val result = dashboardRepository.getAllTransactions()) {
+            // Only show full-screen loader if we have NO cached data
+            if (_uiState.value.transactions.isEmpty()) {
+                _uiState.value = _uiState.value.copy(isLoading = true)
+            }
+            
+            when (val result = dashboardRepository.refreshTransactions()) {
                 is ApiResult.Success -> {
-                    val transactions = result.data
-                    DebugLogger.network("ViewModel", "loadTransactions() success: ${transactions.size} transactions")
-                    val income = transactions.filter { it.transactionType == TransactionType.Income }
-                        .sumOf { it.amount.toDoubleOrNull() ?: 0.0 }
-                    val expense = transactions.filter { it.transactionType == TransactionType.Expense }
-                        .sumOf { it.amount.toDoubleOrNull() ?: 0.0 }
-
-                    val totalTx = income + expense
-
-                    DebugLogger.generic("Dashboard", "totalIncome", income)
-                    DebugLogger.generic("Dashboard", "totalExpense", expense)
-                    DebugLogger.generic("Dashboard", "totalBalance", income - expense)
-                    DebugLogger.generic("Dashboard", "totalTransaction", totalTx)
-
+                    DebugLogger.network("ViewModel", "loadTransactions() backend sync success")
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        transactions = transactions,
-                        totalIncome = income,
-                        totalExpense = expense,
-                        totalBalance = income - expense,
-                        totalTransaction = totalTx,
                         error = null
                     )
                 }
@@ -94,31 +106,12 @@ class HomeScreenViewModel(
         }
         DebugLogger.network("ViewModel", "refresh() triggered")
         _isRefreshing.value = true
-        _uiState.value = _uiState.value.copy(isLoading = true)
         loadJob = viewModelScope.launch {
-            when (val result = dashboardRepository.getAllTransactions()) {
+            when (val result = dashboardRepository.refreshTransactions()) {
                 is ApiResult.Success -> {
-                    val transactions = result.data
-                    DebugLogger.network("ViewModel", "refresh() success: ${transactions.size} transactions")
-                    val income = transactions.filter { it.transactionType == TransactionType.Income }
-                        .sumOf { it.amount.toDoubleOrNull() ?: 0.0 }
-                    val expense = transactions.filter { it.transactionType == TransactionType.Expense }
-                        .sumOf { it.amount.toDoubleOrNull() ?: 0.0 }
-
-                    val totalTx = income + expense
-
-                    DebugLogger.generic("Dashboard", "totalIncome", income)
-                    DebugLogger.generic("Dashboard", "totalExpense", expense)
-                    DebugLogger.generic("Dashboard", "totalBalance", income - expense)
-                    DebugLogger.generic("Dashboard", "totalTransaction", totalTx)
-
+                    DebugLogger.network("ViewModel", "refresh() backend sync success")
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        transactions = transactions,
-                        totalIncome = income,
-                        totalExpense = expense,
-                        totalBalance = income - expense,
-                        totalTransaction = totalTx,
                         error = null
                     )
                 }

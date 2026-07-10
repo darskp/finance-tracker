@@ -7,7 +7,15 @@ import com.finvoraai.personalfinancemanager.finvora.data.model.remote.Transactio
 import com.finvoraai.personalfinancemanager.finvora.data.model.remote.TransactionRequest
 import com.finvoraai.personalfinancemanager.finvora.data.remote.DashboardApiService
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import com.finvoraai.personalfinancemanager.finvora.data.local.toDto
+import com.finvoraai.personalfinancemanager.finvora.data.local.toEntity
+
 interface DashboardRepository {
+    fun getTransactionsStream(): Flow<List<TransactionDto>>
+    suspend fun refreshTransactions(): ApiResult<Unit>
+    
     suspend fun getAllTransactions(): ApiResult<List<TransactionDto>>
     suspend fun getIncome(): ApiResult<List<TransactionDto>>
     suspend fun getExpense(): ApiResult<List<TransactionDto>>
@@ -20,8 +28,28 @@ interface DashboardRepository {
 }
 
 class DashboardRepositoryImpl(
-    private val apiService: DashboardApiService
+    private val apiService: DashboardApiService,
+    private val transactionDao: com.finvoraai.personalfinancemanager.finvora.data.local.TransactionDao
 ) : DashboardRepository {
+    
+    override fun getTransactionsStream(): Flow<List<TransactionDto>> {
+        return transactionDao.getTransactionsStream().map { entities ->
+            entities.map { it.toDto() }
+        }
+    }
+
+    override suspend fun refreshTransactions(): ApiResult<Unit> {
+        return when (val result = safeApiCall("getAllTransactions") { apiService.getAllTransactions() }) {
+            is ApiResult.Success -> {
+                val entities = result.data.map { it.toEntity() }
+                transactionDao.clearTransactions()
+                transactionDao.insertTransactions(entities)
+                ApiResult.Success(Unit)
+            }
+            is ApiResult.Error -> ApiResult.Error(result.error)
+        }
+    }
+
     override suspend fun getAllTransactions() = safeApiCall("getAllTransactions") { apiService.getAllTransactions() }
 
     override suspend fun getIncome() = safeApiCall("getIncome") { apiService.getIncome() }

@@ -29,10 +29,10 @@ class DashboardApiService(
     suspend fun deleteIncome(id: String): MessageResponse = client.delete("delete-income/$id").body()
 
     suspend fun addExpense(request: TransactionRequest): TransactionDto =
-        client.post("add-expenses") { setBody(request) }.body()
+        client.post("add-expense") { setBody(request) }.body()
 
     suspend fun updateExpense(id: String, request: TransactionRequest): TransactionDto =
-        client.put("update-expenses/$id") { setBody(request) }.body()
+        client.put("update-expense/$id") { setBody(request) }.body()
 
-    suspend fun deleteExpense(id: String): MessageResponse = client.delete("delete-expenses/$id").body()
+    suspend fun deleteExpense(id: String): MessageResponse = client.delete("delete-expense/$id").body()
 }

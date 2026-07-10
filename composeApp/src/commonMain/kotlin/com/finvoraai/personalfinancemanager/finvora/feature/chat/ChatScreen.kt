@@ -148,8 +148,8 @@ fun ChatScreen(
                 SuggestionChipsRow(
                     suggestions = uiState.visibleSuggestions,
                     onSuggestionClick = { suggestion ->
+                        // Only populate the input — do NOT auto-send, let user decide
                         inputText = suggestion
-                        viewModel.sendMessage(suggestion)
                     }
                 )
             }
@@ -259,63 +259,86 @@ private fun ChatMessageList(
     val palette = LocalAppPalette.current
     val listState = rememberLazyListState()
 
-    // Auto-scroll to bottom when messages update
+    // Track whether the initial "jump to bottom" has already been done.
+    // On first load we want an INSTANT scroll (no animation = no bounce).
+    // Only after that do new messages get a smooth animated scroll.
+    val hasScrolledToBottom = remember { mutableStateOf(false) }
+
     LaunchedEffect(messages.size, messages.lastOrNull()?.content) {
         if (messages.isNotEmpty()) {
-            listState.animateScrollToItem(messages.size - 1)
-        }
-    }
-
-    if (isHistoryLoading) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Spacing.s3)) {
-                CircularProgressIndicator(color = palette.primary, strokeWidth = Spacing.sHalf)
-                Text(
-                    text = stringResource(Res.string.chat_loading_history),
-                    style = BodySmall(),
-                    color = palette.textSecondary
-                )
-            }
-        }
-        return
-    }
-
-    LazyColumn(
-        state = listState,
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(
-            top = Spacing.s4,
-            bottom = Spacing.s4,
-            start = Spacing.s4,
-            end = Spacing.s4
-        ),
-        verticalArrangement = Arrangement.spacedBy(Spacing.s3)
-    ) {
-        itemsIndexed(messages) { index, message ->
-            // Date separator between messages on different days
-            val showDateSeparator = index == 0 ||
-                messages[index - 1].timestamp.formatChatDateLabel() != message.timestamp.formatChatDateLabel()
-
-            if (showDateSeparator) {
-                ChatDateSeparator(label = message.timestamp.formatChatDateLabel())
-                Spacer(modifier = Modifier.height(Spacing.s2))
-            }
-
-            if (message.role == "user") {
-                UserMessageBubble(message = message)
+            if (!hasScrolledToBottom.value) {
+                // Initial load — jump instantly, no animation = no bounce/jank
+                listState.scrollToItem(messages.size - 1)
+                hasScrolledToBottom.value = true
             } else {
-                AssistantMessageBubble(
-                    message = message,
-                    msgIndex = index,
-                    activeDraftId = activeDraftId,
-                    onConfirm = onConfirm,
-                    onCancel = onCancel,
-                    onUpdateAction = onUpdateAction
-                )
+                // New message added during conversation — smooth scroll
+                listState.animateScrollToItem(messages.size - 1)
+            }
+        }
+    }
+
+    // Show spinner overlay on top of the (invisible) list during history load
+    // so the listState is always alive and we never get a "pop-in" effect
+    Box(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            state = listState,
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                top = Spacing.s4,
+                bottom = Spacing.s4,
+                start = Spacing.s4,
+                end = Spacing.s4
+            ),
+            verticalArrangement = Arrangement.spacedBy(Spacing.s3)
+        ) {
+            itemsIndexed(messages) { index, message ->
+                // Date separator between messages on different days
+                val showDateSeparator = index == 0 ||
+                    messages[index - 1].timestamp.formatChatDateLabel() != message.timestamp.formatChatDateLabel()
+
+                if (showDateSeparator) {
+                    ChatDateSeparator(label = message.timestamp.formatChatDateLabel())
+                    Spacer(modifier = Modifier.height(Spacing.s2))
+                }
+
+                if (message.role == "user") {
+                    UserMessageBubble(message = message)
+                } else {
+                    AssistantMessageBubble(
+                        message = message,
+                        msgIndex = index,
+                        activeDraftId = activeDraftId,
+                        onConfirm = onConfirm,
+                        onCancel = onCancel,
+                        onUpdateAction = onUpdateAction
+                    )
+                }
+            }
+        }
+
+        // Loading spinner shown as an overlay while history is being fetched
+        AnimatedVisibility(
+            visible = isHistoryLoading,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(Spacing.s3)
+                ) {
+                    CircularProgressIndicator(color = palette.primary, strokeWidth = Spacing.sHalf)
+                    Text(
+                        text = stringResource(Res.string.chat_loading_history),
+                        style = BodySmall(),
+                        color = palette.textSecondary
+                    )
+                }
             }
         }
     }
 }
+
 
 // ---------------------------------------------------------------------------
 // Date Separator
@@ -978,6 +1001,61 @@ private fun SuggestionChipsRow(
 }
 
 // ---------------------------------------------------------------------------
+// AI Processing Animated Text
+// ---------------------------------------------------------------------------
+
+@Composable
+private fun AiProcessingText() {
+    val palette = LocalAppPalette.current
+    val transition = rememberInfiniteTransition(label = "ai_processing")
+
+    // Shimmer alpha for the whole text
+    val shimmerAlpha by transition.animateFloat(
+        initialValue = 0.5f, targetValue = 1f,
+        animationSpec = infiniteRepeatable(tween(800, easing = LinearEasing), RepeatMode.Reverse),
+        label = "shimmer"
+    )
+
+    // Dot pulse animations (staggered)
+    val dot1 by transition.animateFloat(
+        initialValue = 0.2f, targetValue = 1f,
+        animationSpec = infiniteRepeatable(tween(500, 0, LinearEasing), RepeatMode.Reverse),
+        label = "dot1"
+    )
+    val dot2 by transition.animateFloat(
+        initialValue = 0.2f, targetValue = 1f,
+        animationSpec = infiniteRepeatable(tween(500, 160, LinearEasing), RepeatMode.Reverse),
+        label = "dot2"
+    )
+    val dot3 by transition.animateFloat(
+        initialValue = 0.2f, targetValue = 1f,
+        animationSpec = infiniteRepeatable(tween(500, 320, LinearEasing), RepeatMode.Reverse),
+        label = "dot3"
+    )
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Spacing.s1)
+    ) {
+        // Pulsing dots
+        listOf(dot1, dot2, dot3).forEach { alpha ->
+            Box(
+                modifier = Modifier
+                    .size(Spacing.s1 + Spacing.sHalf)
+                    .clip(CircleShape)
+                    .background(palette.primary.copy(alpha = alpha))
+            )
+        }
+        Spacer(modifier = Modifier.width(Spacing.s1))
+        Text(
+            text = stringResource(Res.string.chat_processing_status),
+            style = BodyNormal().copy(fontWeight = FontWeight.Medium),
+            color = palette.primary.copy(alpha = shimmerAlpha)
+        )
+    }
+}
+
+// ---------------------------------------------------------------------------
 // Input Bar
 // ---------------------------------------------------------------------------
 
@@ -1009,11 +1087,7 @@ private fun ChatInputBar(
                 .padding(horizontal = Spacing.s4, vertical = Spacing.s3)
         ) {
             if (isLoading) {
-                Text(
-                    text = stringResource(Res.string.chat_processing_status),
-                    style = BodyNormal(),
-                    color = palette.textTertiary
-                )
+                AiProcessingText()
             } else if (value.isEmpty()) {
                 val phText = if (hasUnresolvedAction) {
                     stringResource(Res.string.chat_input_placeholder_pending)
