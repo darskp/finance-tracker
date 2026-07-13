@@ -29,8 +29,9 @@ import com.finvoraai.personalfinancemanager.finvora.ui.components.AppCard
 import com.finvoraai.personalfinancemanager.finvora.ui.components.ButtonStyle
 import com.finvoraai.personalfinancemanager.finvora.ui.components.ErrorStateView
 import com.finvoraai.personalfinancemanager.finvora.ui.components.FinvoraButton
-import com.finvoraai.personalfinancemanager.finvora.ui.components.LoadingView
 import com.finvoraai.personalfinancemanager.finvora.ui.navigation.NavRoute
+import com.finvoraai.personalfinancemanager.finvora.ui.skeleton.GlassSkeleton
+import com.finvoraai.personalfinancemanager.finvora.ui.skeleton.GlassSkeletonCircle
 import com.finvoraai.personalfinancemanager.finvora.ui.theme.*
 import com.finvoraai.personalfinancemanager.finvora.ui.uiutils.*
 import com.finvoraai.personalfinancemanager.finvora.ui.utils.collectAsStateLifecycleAware
@@ -88,7 +89,68 @@ fun HomePageContent(
         }
     ) {
         if (uiState.isLoading && uiState.transactions.isEmpty()) {
-            LoadingView(modifier = Modifier.fillMaxSize())
+            // Glass Skeleton loading state — mirrors the dashboard layout structure
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(
+                    top = padding.calculateTopPadding() + Spacing.s12,
+                    bottom = padding.calculateBottomPadding() + 80.dp,
+                    start = Spacing.s4,
+                    end = Spacing.s4
+                ),
+                verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(Spacing.s2)
+            ) {
+                // Balance card
+                item {
+                    GlassSkeleton(
+                        modifier = Modifier.fillMaxWidth().height(140.dp),
+                        shape = RoundedCornerShape(16.dp)
+                    )
+                }
+                // Section header row
+                item {
+                    VSpacer(Spacing.s1)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        GlassSkeleton(Modifier.width(180.dp).height(24.dp), shape = RoundedCornerShape(6.dp))
+                        GlassSkeleton(Modifier.width(60.dp).height(16.dp), shape = RoundedCornerShape(6.dp))
+                    }
+                    VSpacer(Spacing.s1)
+                }
+                // 3 transaction row skeletons
+                items(3) {
+                    GlassSkeleton(
+                        modifier = Modifier.fillMaxWidth().height(72.dp),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                }
+                // Wealth insights header
+                item {
+                    VSpacer(Spacing.s1)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        GlassSkeleton(Modifier.width(160.dp).height(24.dp), shape = RoundedCornerShape(6.dp))
+                        GlassSkeleton(Modifier.width(100.dp).height(16.dp), shape = RoundedCornerShape(6.dp))
+                    }
+                    VSpacer(Spacing.s1)
+                }
+                // 2 insight card skeletons side by side
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(Spacing.s3)
+                    ) {
+                        GlassSkeleton(Modifier.weight(1f).height(160.dp), shape = RoundedCornerShape(16.dp))
+                        GlassSkeleton(Modifier.weight(1f).height(160.dp), shape = RoundedCornerShape(16.dp))
+                    }
+                }
+            }
         } else if (uiState.error != null && uiState.transactions.isEmpty()) {
             ErrorStateView(
                 errorMessage = Res.string.error_message_generic,
