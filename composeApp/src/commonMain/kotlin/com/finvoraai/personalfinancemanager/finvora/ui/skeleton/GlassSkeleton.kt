@@ -1,7 +1,8 @@
-﻿package com.finvoraai.personalfinancemanager.finvora.ui.skeleton
+package com.finvoraai.personalfinancemanager.finvora.ui.skeleton
 
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,7 +48,7 @@ fun GlassSkeleton(
     val baseColor = palette.surfaceVariant
     val shineColor = palette.onSurface
 
-    Modifier
+    val skeletonModifier = Modifier
         .clip(shape)
         .drawWithCache {
             // The color list is computed here (cache layer) — only recreated when size changes.
@@ -75,5 +76,6 @@ fun GlassSkeleton(
                 drawRect(brush = brush)
             }
         }
-        .let { modifier.then(it) }
+
+    Box(modifier = modifier.then(skeletonModifier))
 }

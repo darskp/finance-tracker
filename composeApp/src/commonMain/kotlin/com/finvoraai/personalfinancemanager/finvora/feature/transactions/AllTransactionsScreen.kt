@@ -22,7 +22,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import com.finvoraai.personalfinancemanager.finvora.ui.skeleton.GlassSkeleton
@@ -65,6 +69,8 @@ fun AllTransactionsScreen(
     viewModel: HomeScreenViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateLifecycleAware()
+    val isRefreshing by viewModel.isRefreshing.collectAsStateLifecycleAware()
+    val pullRefreshState = rememberPullToRefreshState()
     val palette = LocalAppPalette.current
 
     AppBackgroundScreen {
@@ -101,48 +107,66 @@ fun AllTransactionsScreen(
             }
 
             // Body
-            if (uiState.isLoading && uiState.transactions.isEmpty()) {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(
-                        horizontal = Spacing.s4,
-                        vertical = Spacing.s3
-                    ),
-                    verticalArrangement = Arrangement.spacedBy(Spacing.sHalf)
-                ) {
-                    items(6) {
-                        TransactionRowSkeleton()
+            PullToRefreshBox(
+                state = pullRefreshState,
+                isRefreshing = isRefreshing,
+                onRefresh = { viewModel.refresh() },
+                modifier = Modifier.fillMaxSize().weight(1f),
+                indicator = {
+                    MaterialTheme(
+                        colorScheme = MaterialTheme.colorScheme.copy(primary = palette.primary)
+                    ) {
+                        PullToRefreshDefaults.Indicator(
+                            modifier = Modifier.align(Alignment.TopCenter),
+                            isRefreshing = isRefreshing,
+                            state = pullRefreshState
+                        )
                     }
                 }
-            } else if (uiState.transactions.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = stringResource(Res.string.all_transactions_empty),
-                        style = BodyNormal(),
-                        color = palette.textSecondary
-                    )
-                }
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(
-                        horizontal = Spacing.s4,
-                        vertical = Spacing.s3
-                    ),
-                    verticalArrangement = Arrangement.spacedBy(Spacing.sHalf)
-                ) {
-                    items(uiState.transactions) { tx ->
-                        AllTransactionRow(
-                            emoji = tx.emoji,
-                            title = tx.title,
-                            subtitle = tx.category,
-                            amount = formatTxAmount(tx.amount.toDoubleOrNull() ?: 0.0),
-                            date = tx.date,
-                            isIncome = tx.transactionType == TransactionType.Income
+            ) {
+                if ((uiState.isLoading && uiState.transactions.isEmpty()) || isRefreshing) {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(
+                            horizontal = Spacing.s4,
+                            vertical = Spacing.s3
+                        ),
+                        verticalArrangement = Arrangement.spacedBy(Spacing.sHalf)
+                    ) {
+                        items(6) {
+                            TransactionRowSkeleton()
+                        }
+                    }
+                } else if (uiState.transactions.isEmpty()) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = stringResource(Res.string.all_transactions_empty),
+                            style = BodyNormal(),
+                            color = palette.textSecondary
                         )
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(
+                            horizontal = Spacing.s4,
+                            vertical = Spacing.s3
+                        ),
+                        verticalArrangement = Arrangement.spacedBy(Spacing.sHalf)
+                    ) {
+                        items(uiState.transactions) { tx ->
+                            AllTransactionRow(
+                                emoji = tx.emoji,
+                                title = tx.title,
+                                subtitle = tx.category,
+                                amount = formatTxAmount(tx.amount.toDoubleOrNull() ?: 0.0),
+                                date = tx.date,
+                                isIncome = tx.transactionType == TransactionType.Income
+                            )
+                        }
                     }
                 }
             }

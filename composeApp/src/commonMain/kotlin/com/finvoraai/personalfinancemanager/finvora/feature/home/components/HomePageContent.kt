@@ -88,7 +88,7 @@ fun HomePageContent(
             }
         }
     ) {
-        if (uiState.isLoading && uiState.transactions.isEmpty()) {
+        if ((uiState.isLoading && uiState.transactions.isEmpty()) || isRefreshing) {
             // Glass Skeleton loading state — mirrors the dashboard layout structure
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
