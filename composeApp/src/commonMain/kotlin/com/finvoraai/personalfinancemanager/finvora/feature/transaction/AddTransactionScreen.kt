@@ -199,7 +199,7 @@ fun AddTransactionScreen(
                 }
                 Text(
                     text = stringResource(Res.string.transaction_new_title),
-                    style = H6TextStyle().copy(fontWeight = FontWeight.SemiBold),
+                    style = H6TextStyle().copy(fontWeight = FontWeight.Black),
                     color = palette.textPrimary,
                     modifier = Modifier.weight(1f),
                     textAlign = TextAlign.Center

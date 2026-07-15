@@ -198,22 +198,6 @@ private fun ChatHeader(onBackClick: () -> Unit) {
             )
         }
 
-        Box(
-            modifier = Modifier
-                .size(Spacing.s10)
-                .clip(RoundedCornerShape(Spacing.s3))
-                .background(palette.primary.copy(alpha = 0.12f)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                painter = painterResource(Res.drawable.ic_bot),
-                contentDescription = stringResource(Res.string.chat_bot_cd),
-                tint = palette.primary,
-                modifier = Modifier.size(Spacing.s5)
-            )
-        }
-
-        Spacer(modifier = Modifier.width(Spacing.s3))
 
         Column {
             Text(

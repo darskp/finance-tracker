@@ -234,9 +234,10 @@ fun HomeTopAppBar(
             if (avatarRes != null) {
                 Box(
                     modifier = Modifier
-                        .size(Spacing.s9)
+                        .size(Spacing.s10)
                         .clip(CircleShape)
-                        .border(Spacing.hairline, palette.outline, CircleShape)
+                        .background(palette.surfaceVariant)
+                        .border(Spacing.hairline, palette.outline.copy(alpha = 0.5f), CircleShape)
                         .then(
                             if (onAvatarClick != null) {
                                 Modifier.clickable { onAvatarClick() }
@@ -246,11 +247,11 @@ fun HomeTopAppBar(
                         ),
                     contentAlignment = Alignment.Center
                 ) {
-                    Image(
+                    Icon(
                         painter = painterResource(avatarRes),
                         contentDescription = stringResource(Res.string.cd_avatar),
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
+                        modifier = Modifier.size(Spacing.s6),
+                        tint = palette.textPrimary
                     )
                 }
             }
