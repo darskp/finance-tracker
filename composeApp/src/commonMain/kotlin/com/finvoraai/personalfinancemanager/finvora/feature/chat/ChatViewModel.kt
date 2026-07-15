@@ -47,6 +47,7 @@ data class PendingActionUi(
 @Immutable
 data class ChatUiState(
     val messages: List<ChatMessage> = emptyList(),
+    val allSuggestions: List<String> = emptyList(),
     val visibleSuggestions: List<String> = emptyList(),
     val isHistoryLoading: Boolean = true,
     val isLoading: Boolean = false,
@@ -97,22 +98,29 @@ class ChatViewModel(
         viewModelScope.launch {
             chatRepository.getSuggestions().collect { result ->
                 result.onSuccess { list ->
-                    _uiState.update { it.copy(visibleSuggestions = list.shuffled().take(3)) }
+                    _uiState.update { it.copy(allSuggestions = list, visibleSuggestions = list.shuffled().take(6)) }
                 }.onFailure {
                     val defaultSugs = getDefaultSuggestions()
-                    _uiState.update { it.copy(visibleSuggestions = defaultSugs.shuffled().take(3)) }
+                    _uiState.update { it.copy(allSuggestions = defaultSugs, visibleSuggestions = defaultSugs.shuffled().take(6)) }
                 }
             }
         }
     }
 
     fun shuffleSuggestions() {
-        viewModelScope.launch {
-            // Because we only rely on default suggestions when there's an error,
-            // we will fetch defaults here and use them for the shuffle pool.
-            // Ideally we'd use the successful API ones, but since this is localized we can just use defaults.
-            val defaultSugs = getDefaultSuggestions()
-            _uiState.update { it.copy(visibleSuggestions = defaultSugs.shuffled().take(3)) }
+        val pool = _uiState.value.allSuggestions
+        if (pool.isNotEmpty()) {
+            _uiState.update { it.copy(visibleSuggestions = pool.shuffled().take(6)) }
+        } else {
+            viewModelScope.launch {
+                val defaultSugs = getDefaultSuggestions()
+                _uiState.update { 
+                    it.copy(
+                        allSuggestions = defaultSugs, 
+                        visibleSuggestions = defaultSugs.shuffled().take(6)
+                    ) 
+                }
+            }
         }
     }
 

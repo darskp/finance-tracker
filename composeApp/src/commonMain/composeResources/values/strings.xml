@@ -178,8 +178,8 @@
     <!-- AI Chat Screen -->
     <string name="chat_header_model">FINANCE INTELLIGENCE</string>
     <string name="chat_model_active_label">Llama 3.3 · Active</string>
-    <string name="chat_input_placeholder">Try: Add 500 food, Check my balance, Analyze trends…</string>
-    <string name="chat_input_placeholder_pending">Need to change something? Just type here or confirm above…</string>
+    <string name="chat_input_placeholder">Try: Add 500 food, Check balance…</string>
+    <string name="chat_input_placeholder_pending">Need to change something? Type or confirm…</string>
     <string name="chat_send_cd">Send message</string>
     <string name="chat_loading_history">Loading your conversation history…</string>
     <string name="chat_confirm_btn">Confirm</string>
