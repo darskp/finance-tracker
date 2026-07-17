@@ -44,11 +44,20 @@ import kotlin.math.abs
 private fun formatAmount(amount: Double): String {
     val absAmount = abs(amount)
     val prefix = if (amount < 0) "-" else ""
+    fun fmt(v: Double): String {
+        val s = (Math.round(v * 10) / 10.0)
+        return if (s == kotlin.math.floor(s)) s.toInt().toString() else s.toString()
+    }
     return when {
-        absAmount >= 1_000_000_000 -> "$prefix$${(absAmount / 1_000_000_000).toString().take(4).removeSuffix(".")}B"
-        absAmount >= 1_000_000 -> "$prefix$${(absAmount / 1_000_000).toString().take(4).removeSuffix(".")}M"
-        absAmount >= 1_000 -> "$prefix$${(absAmount / 1_000).toString().take(4).removeSuffix(".")}k"
-        else -> "$prefix$${absAmount.toLong()}"
+        absAmount >= 1_000_000_000_000_000.0 -> "$prefix\$${fmt(absAmount / 1_000_000_000_000_000.0)}Q"
+        absAmount >= 1_000_000_000_000.0    -> "$prefix\$${fmt(absAmount / 1_000_000_000_000.0)}T"
+        absAmount >= 1_000_000_000.0        -> "$prefix\$${fmt(absAmount / 1_000_000_000.0)}B"
+        absAmount >= 1_000_000.0            -> "$prefix\$${fmt(absAmount / 1_000_000.0)}M"
+        absAmount >= 1_000.0               -> "$prefix\$${fmt(absAmount / 1_000.0)}k"
+        else -> {
+            val s = (Math.round(absAmount * 10) / 10.0)
+            if (s == kotlin.math.floor(s)) "$prefix\$${s.toInt()}" else "$prefix\$$s"
+        }
     }
 }
 
@@ -162,7 +171,7 @@ fun HomePageContent(
                 modifier = Modifier.fillMaxSize(),
                 state = listState,
                 contentPadding = PaddingValues(
-                    top = padding.calculateTopPadding() + Spacing.s12,
+                    top = padding.calculateTopPadding() + Spacing.s12 + Spacing.s4,
                     bottom = padding.calculateBottomPadding() + 80.dp,
                     start = Spacing.s4,
                     end = Spacing.s4
@@ -174,7 +183,7 @@ fun HomePageContent(
                     AppCard(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = Spacing.s1)
+                            .padding(vertical = Spacing.s2)
                     ) {
                         Column(
                             modifier = Modifier
@@ -229,7 +238,8 @@ fun HomePageContent(
                                         style = H6TextStyle().copy(
                                             color = palette.success,
                                             fontWeight = FontWeight.Bold
-                                        )
+                                        ),
+                                        modifier = Modifier.padding(start = Spacing.s4 + Spacing.s1)
                                     )
                                 }
 
@@ -254,7 +264,8 @@ fun HomePageContent(
                                         style = H6TextStyle().copy(
                                             color = palette.error,
                                             fontWeight = FontWeight.Bold
-                                        )
+                                        ),
+                                        modifier = Modifier.padding(start = Spacing.s4 + Spacing.s1)
                                     )
                                 }
                             }
@@ -264,11 +275,11 @@ fun HomePageContent(
 
                 // 2. Recent Transactions Section
                 item {
-                    VSpacer(Spacing.s3)
+                    VSpacer(Spacing.s4)
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = Spacing.s1),
+                            .padding(vertical = Spacing.s2),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
@@ -312,11 +323,11 @@ fun HomePageContent(
 
                 // 3. Wealth Insights Section
                 item {
-                    VSpacer(Spacing.s3)
+                    VSpacer(Spacing.s4)
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = Spacing.s1),
+                            .padding(vertical = Spacing.s2),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {

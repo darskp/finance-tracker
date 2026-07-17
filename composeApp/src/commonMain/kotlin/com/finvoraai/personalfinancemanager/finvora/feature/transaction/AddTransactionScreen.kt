@@ -378,25 +378,13 @@ fun AddTransactionScreen(
                         Row(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(Spacing.s10)
-                                    .clip(RoundedCornerShape(Spacing.s2))
-                                    .background(palette.primary.copy(alpha = 0.12f)),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = uiState.selectedEmoji,
-                                    style = H4TextStyle()
-                                )
-                            }
                             Text(
                                 text = uiState.selectedCategory?.let {
                                     stringResource(it.labelResId)
                                 } ?: stringResource(Res.string.category_other),
                                 style = BodyNormal().copy(fontWeight = FontWeight.Medium),
                                 color = palette.textPrimary,
-                                modifier = Modifier.padding(start = Spacing.s3)
+                                modifier = Modifier.padding(start = Spacing.s2)
                             )
                         }
                         Icon(

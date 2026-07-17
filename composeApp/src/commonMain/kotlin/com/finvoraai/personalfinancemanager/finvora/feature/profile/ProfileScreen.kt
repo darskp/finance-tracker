@@ -116,18 +116,21 @@ fun ProfileScreen(
                         ProfileListItem(
                             iconRes = Res.drawable.ic_person,
                             title = stringResource(Res.string.profile_item_personal_info),
+                            value = stringResource(Res.string.profile_coming_soon),
                             onClick = { /* dummy */ }
                         )
                         Divider(color = palette.outline.copy(alpha = 0.5f), modifier = Modifier.padding(horizontal = Spacing.s4))
                         ProfileListItem(
                             iconRes = Res.drawable.ic_lock,
                             title = stringResource(Res.string.profile_item_privacy_security),
+                            value = stringResource(Res.string.profile_coming_soon),
                             onClick = { /* dummy */ }
                         )
                         Divider(color = palette.outline.copy(alpha = 0.5f), modifier = Modifier.padding(horizontal = Spacing.s4))
                         ProfileListItem(
                             iconRes = Res.drawable.ic_features, // fallback
                             title = stringResource(Res.string.profile_item_notifications),
+                            value = stringResource(Res.string.profile_coming_soon),
                             onClick = { /* dummy */ }
                         )
                     }
@@ -143,7 +146,7 @@ fun ProfileScreen(
                         ProfileListItem(
                             iconRes = Res.drawable.ic_settings,
                             title = stringResource(Res.string.profile_item_language_region),
-                            value = stringResource(Res.string.profile_item_language_value),
+                            value = stringResource(Res.string.profile_coming_soon),
                             onClick = { /* dummy */ }
                         )
                         Divider(color = palette.outline.copy(alpha = 0.5f), modifier = Modifier.padding(horizontal = Spacing.s4))

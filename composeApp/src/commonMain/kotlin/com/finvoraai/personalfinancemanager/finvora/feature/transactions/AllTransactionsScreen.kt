@@ -273,10 +273,19 @@ private fun TransactionRowSkeleton() {
 private fun formatTxAmount(amount: Double): String {
     val absAmount = abs(amount)
     val prefix = if (amount < 0) "-" else ""
+    fun fmt(v: Double): String {
+        val s = (Math.round(v * 10) / 10.0)
+        return if (s == kotlin.math.floor(s)) s.toInt().toString() else s.toString()
+    }
     return when {
-        absAmount >= 1_000_000_000 -> "$prefix$${(absAmount / 1_000_000_000).toString().take(4).removeSuffix(".")}B"
-        absAmount >= 1_000_000 -> "$prefix$${(absAmount / 1_000_000).toString().take(4).removeSuffix(".")}M"
-        absAmount >= 1_000 -> "$prefix$${(absAmount / 1_000).toString().take(4).removeSuffix(".")}k"
-        else -> "$prefix$${absAmount.toLong()}"
+        absAmount >= 1_000_000_000_000_000.0 -> "$prefix\$${fmt(absAmount / 1_000_000_000_000_000.0)}Q"
+        absAmount >= 1_000_000_000_000.0    -> "$prefix\$${fmt(absAmount / 1_000_000_000_000.0)}T"
+        absAmount >= 1_000_000_000.0        -> "$prefix\$${fmt(absAmount / 1_000_000_000.0)}B"
+        absAmount >= 1_000_000.0            -> "$prefix\$${fmt(absAmount / 1_000_000.0)}M"
+        absAmount >= 1_000.0               -> "$prefix\$${fmt(absAmount / 1_000.0)}k"
+        else -> {
+            val s = (Math.round(absAmount * 10) / 10.0)
+            if (s == kotlin.math.floor(s)) "$prefix\$${s.toInt()}" else "$prefix\$$s"
+        }
     }
 }
